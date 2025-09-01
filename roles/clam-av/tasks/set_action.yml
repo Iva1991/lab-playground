@@ -1,0 +1,34 @@
+---
+
+#########################################################
+## Set action                                          ##
+#########################################################
+# If action variable is not defined, gather status of the service
+# If service not installed, set action to install.
+# If the service is not started, set action to start.
+
+# Gather installed packages
+- name: Gather installed packages using package_facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+# Check if clamav service is running
+- name: Check status of ClamAV service
+  ansible.builtin.systemd:
+    name: clamd
+  register: clamav_service_status
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+# Set action variable when service is not running
+- name: Set action to start if ClamAV service is not running
+  ansible.builtin.set_fact:
+    action: "start"
+  when: clamav_service_status.status != 'running'
+
+# Set action to install if ClamAV is not installed
+- name: Set action to install if ClamAV is not installed
+  ansible.builtin.set_fact:
+    action: "install"
+  when: "'clamav' not in ansible_facts.packages"

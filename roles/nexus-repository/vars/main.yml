@@ -1,0 +1,385 @@
+---
+
+actions:
+    # Deployment actions
+    - install:
+            description: "Installation and configuration of the latest version of Sonatype Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_name:
+                        description: "Unique name (identifier) of Nexus Repository instance, for example server name/cluster name. Used in combination with Vault parameters."
+                        required: true
+                        value: ""
+                - nexus_repository_url:
+                        description: "URL/file to Nexus Repository container or installation file."
+                        required: true
+                        value: ""
+                - nexus_repository_tag:
+                        description: "Tag of Nexus Repository container."
+                        required: false
+                        value: ""
+                - nexus_repository_checksum:
+                        description: "Checksum of Nexus Repository container."
+                        required: false
+                        value: ""
+                - nexus_repository_checksum_algorithm:
+                        description: "Checksum algorithm of Nexus Repository container."
+                        required: false
+                        value: ""
+                - nexus_repository_name:
+                        description: "Name of Nexus Repository container."
+                        required: true
+                        value: ""
+                - nexus_container_name:
+                        description: "Name of Nexus Repository container."
+                        required: false
+                        value: "nexus3"
+                - nexus_container_ports:
+                        description: "Ports of Nexus Repository container."
+                        required: false
+                        value: [""]
+                - nexus_container_volumes:
+                        description: "Volumes of Nexus Repository container."
+                        required: false
+                        value: [""]
+                - nexus_data_dir:
+                        description: "Data directory for Nexus Repository."
+                        required: false
+                        value: "/data/nexus"
+                - platform:
+                        description: "Platform on which Nexus Repository is installed."
+                        required: false
+                        value: ""
+                - uninstall:
+                        description: "Uninstallation of Sonatype Nexus Repository. Removes the container, files, users, and groups."
+                        required: false
+                        value: false
+
+    - uninstall:
+            description: "Uninstallation of Sonatype Nexus Repository. Removes the container, files, users, and groups."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+                - keep_data:
+                        description: "Retain data directory."
+                        required: false
+                        value: false
+
+    - configure:
+            description: "Configure Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                        value: ""
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                        value: ""
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                        value: ""
+
+    - configure_vault:
+            description: "Configure Nexus Repository with Vault."
+            icon: "media/icon_nexus_repository.png"
+
+    - update:
+            description: "Update Sonatype Nexus Repository to the latest version."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+                - repository_url:
+                        description: "URL/file to Nexus Repository container or installation file."
+                        required: true
+                        value: ""
+                - repository_tag:
+                        description: "Tag of Nexus Repository container."
+                        required: false
+                        value: ""
+                - repository_checksum:
+                        description: "Checksum of Nexus Repository container."
+                        required: false
+                        value: ""
+                - repository_checksum_algorithm:
+                        description: "Checksum algorithm of Nexus Repository container."
+                        required: false
+                        value: ""
+
+    - start:
+            description: "Start Sonatype Nexus Repository service."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+
+    - stop:
+            description: "Stop Sonatype Nexus Repository service."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+
+    - setup:
+            description: "Setup Sonatype Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+
+# -------------------------------------------------------
+
+    # User actions
+    - get_user:
+            description: "Retrieve users from Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                        value: ""
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                        value: ""
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                        value: ""
+                - nexus_username:
+                        description: "Username of Nexus Repository."
+                        required: true
+                        value: ""
+
+    - create_user:
+            description: "Create user in Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                        value: ""
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                        value: ""
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                        value: ""
+                - nexus_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: true
+                        value: ""
+                - nexus_password:
+                        description: "Password for user for access to Nexus Repository instance."
+                        required: true
+                        value: ""
+                - nexus_first_name:
+                        description: "First name of user."
+                        required: true
+                        value: ""
+                - nexus_last_name:
+                        description: "Last name of user."
+                        required: true
+                        value: ""
+                - nexus_email:
+                        description: "Email address of user."
+                        required: true
+                        value: ""
+                - nexus_roles:
+                        description: "Roles of user."
+                        required: true
+                        value: ""
+
+    - destroy_user:
+            description: "Delete user from Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                        value: ""
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                        value: ""
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                        value: ""
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                - nexus_username:
+                        description: "Username of Nexus Repository."
+                        required: true
+
+# -------------------------------------------------------
+
+    # Repository actions
+    - get_repository:
+            description: "Retrieve repository from Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_name:
+                        description: "Name of Nexus Repository."
+                        required: true
+                - nexus_repository_type:
+                        description: "Type of Nexus Repository."
+                        required: false
+
+    - create_repository:
+            description: "Create repository in Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_name:
+                        description: "Name of Nexus Repository."
+                        required: true
+                - nexus_repository_type:
+                        description: "Type of Nexus Repository."
+                        required: false
+
+    - destroy_repository:
+            description: "Delete repository from Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_name:
+                        description: "Name of Nexus Repository."
+                        required: true
+
+# -------------------------------------------------------
+
+    # Artifact actions
+    - import_artifacts:
+            description: "Import artifacts into Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement Vault parameters."
+                        required: true
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_name:
+                        description: "Name of repository where artifacts need to be imported, for example 'maven-releases', 'operating_systems'."
+                        required: true
+                - nexus_repository_folder:
+                        description: "Folder of Nexus Repository where artifacts need to be imported, for example '/Microsoft/Windows/Server/2022'"
+                        required: true
+                - source_folder:
+                        description: "Folder/directory of artifacts to be imported, for example '/tmp/import'."
+                        required: true
+
+    - export_artifacts:
+            description: "Export artifacts from Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_vault_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_name:
+                        description: "Name of repository from which artifacts are exported, for example 'maven-releases', 'operating_systems'."
+                        required: true
+                - nexus_repository_folder:
+                        description: "Folder of Nexus Repository from which artifacts are exported, for example '/Microsoft/Windows/Server/2022'"
+                        required: true
+                - destination_folder:
+                        description: "Folder location where artifacts need to be exported."
+                        required: true
+                - overwrite:
+                        description: "Overwrite files if they already exist."
+                        required: false
+                        value: false
+
+    - sync_artifacts:
+            description: "Synchronize artifacts in Nexus Repository."
+            icon: "media/icon_nexus_repository.png"
+            parameters:
+                - nexus_repository_id:
+                        description: "Unique identifier of Nexus Repository instance, for example server name/cluster name. Used to supplement parameters."
+                        required: true
+                - nexus_repository_address:
+                        description: "URL:port for access to Nexus Repository instance, for example 'http://nexus-repository:8081'."
+                        required: false
+                - nexus_repository_username:
+                        description: "Username for access to Nexus Repository instance."
+                        required: false
+                - nexus_repository_password:
+                        description: "Password for username for access to Nexus Repository instance."
+                        required: false
+
+# -------------------------------------------------------
+

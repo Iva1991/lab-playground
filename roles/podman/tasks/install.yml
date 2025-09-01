@@ -1,0 +1,87 @@
+---
+
+#########################################################
+## Podman installation                                 ##
+#########################################################
+
+# Gather installed packages
+- name: Gather installed packages...
+  ansible.builtin.package_facts:
+    manager: auto
+
+# Check if Podman is installed
+- name: Determine Podman container infrastructure...
+  ansible.builtin.debug:
+    msg: "Podman is not installed. Please wait while installing Podman prerequisites..."
+  when: '"podman" not in ansible_facts.packages'
+
+#########################################################
+## Uninstall before install                            ##
+#########################################################
+
+# Set uninstall if not defined
+- name: Gather variables (uninstall)...
+  ansible.builtin.set_fact:
+    podman_vars.uninstall: false
+  when: podman_vars.uninstall is not defined
+
+# Run uninstall if Podman is installed and uninstall is set
+- name: Run uninstall action if Podman is installed...
+  ansible.builtin.include_tasks: uninstall.yml
+  when:
+    - '"podman" in ansible_facts.packages'
+    - podman_vars.uninstall == true
+
+#########################################################
+## Pre-installation                                    ##
+#########################################################
+
+#########################################################
+## Installation                                        ##
+#########################################################
+
+# Install Podman on server
+- name: Install Podman on RHEL platform...
+  become: true
+  ansible.builtin.package:
+    name: "{{ item}}"
+    state: present
+  when: ansible_os_family == "RedHat"
+  loop: "{{ podman_vars | dict2items | selectattr('key', 'equalto', 'packages') | map(attribute='value') | list }}"
+
+# Install Podman on server
+- name: Install Podman on Ubuntu platform...
+  become: true
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  when: ansible_pkg_mgr == 'apt'
+  loop: "{{ podman_vars | dict2items | selectattr('key', 'equalto', 'packages') | map(attribute='value') | list }}"
+
+# Start Podman on boot
+- name: Start Podman on server boot...
+  become: true
+  ansible.builtin.systemd:
+    name: podman
+    enabled: yes
+    state: started
+
+#########################################################
+## Configuration                                       ##
+#########################################################
+
+# Configure Podman
+- name: Start configure task...
+  ansible.builtin.include_tasks: configure.yml
+  vars:
+    action: "configure"
+
+#########################################################
+## Post-install                                        ##
+#########################################################
+
+# Unset variables
+#- name: Unset variables...
+#  ansible.builtin.set_fact:
+#    <variable>: null
