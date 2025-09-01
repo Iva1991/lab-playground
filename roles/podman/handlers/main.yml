@@ -1,8 +1,0 @@
----
-# Handlers for Podman role
-
-- name: Restart Podman
-  ansible.builtin.systemd:
-    name: podman
-    state: restarted
-    
