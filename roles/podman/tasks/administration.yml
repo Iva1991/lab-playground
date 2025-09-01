@@ -1,0 +1,71 @@
+---
+
+#########################################################
+## Podman Server Administration module                 ##
+#########################################################
+
+# include task gather_podman_variables.yml
+- name: Gather Podman variables...
+  ansible.builtin.include_tasks: gather_podman_variables.yml
+  when:
+    - vault_address is defined
+    - vault_token is defined
+    - podman_vars.secrets.secret_engine_name is defined
+    - podman_vars.secrets.vault_id is defined
+
+#########################################################
+## Start Podman service                                ##
+#########################################################
+
+# Start podman service.
+- name: Start Podman service
+  when: action == 'start'
+  block:
+
+    # Start podman service
+    - name: Start Podman service...
+      ansible.builtin.systemd:
+        name: "podman"
+        state: started
+        enabled: yes
+
+#########################################################
+## Stop Podman service                                 ##
+#########################################################
+
+# Stop podman service.
+- name: Stop Podman service
+  when: action == 'stop'
+  block:
+
+    # Stop podman service
+    - name: Stop Podman service...
+      ansible.builtin.systemd:
+        name: "podman"
+        state: stopped
+        enabled: no
+
+#########################################################
+## Update Podman                                       ##
+#########################################################
+
+# Update Podman to latest version.
+- name: Update Podman service
+  when: action == 'update'
+  block:
+
+    # Update Podman package
+    - name: Update Podman package...
+      become: true
+      ansible.builtin.package:
+        name: "podman"
+        state: latest
+
+#########################################################
+## Post actions                                        ##
+#########################################################
+
+# Unset variables
+#- name: Unset variables...
+#  ansible.builtin.set_fact:
+#    <variable>: null

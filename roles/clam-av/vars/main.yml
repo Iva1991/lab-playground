@@ -1,0 +1,45 @@
+actions:
+    - install:
+        description: "Install the latest version of clamav and perform basic configuration."
+        parameters:
+            - uninstall:
+                description: "Uninstall existing clamav before installation."
+                required: false
+            - clamav_branding_logo:
+                description: "URL/path to the logo for clamav branding."
+                required: false
+            - clamav_branding_banner:
+                description: "URL/path to the banner for clamav branding."
+                required: false
+    - uninstall:
+        description: "Uninstall clamav and remove its configuration folder."
+        parameters:
+            - remove_data:
+                description: "Remove all clamav data during uninstallation."
+                required: false
+
+    - configure:
+        description: "Reconfigure clamav settings."
+        parameters:
+            - clamav_branding_logo:
+                description: "URL/path to the logo for clamav branding."
+                required: false
+            - clamav_branding_banner:
+                description: "URL/path to the banner for clamav branding."
+                required: false
+
+    - start:
+        description: "Start the clamav service."
+
+    - stop:
+        description: "Stop the clamav service."
+
+    - update:
+        description: "Update clamav to the latest version."
+        parameters:
+            - backup_config:
+                description: "Backup existing configuration before updating."
+                required: false
+            - notify_users:
+                description: "Notify users about the update."
+                required: false

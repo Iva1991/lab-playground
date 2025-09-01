@@ -1,0 +1,64 @@
+---
+
+#########################################################
+## Main module for server-config role                  ##
+#########################################################
+
+# Show message
+- name: Show action message
+  debug:
+    msg: "Starting role {{ role_name }}... action: {{ action }}."
+
+# If action variable is not defined, gather status of the service and set action variable
+- name: Gather action variable status...
+  ansible.builtin.include_tasks: set_action.yml
+  when: action is not defined
+
+# Assert that action is in actions
+- name: "Verify valid action ({{ action }})..."
+  ansible.builtin.assert:
+    that:
+      - action in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
+    fail_msg: "The action '{{ action }}' is not in the list of valid actions..."
+    quiet: true
+
+# Get defaults for the role
+- name: Gather variables (server_config)...
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/main.yml"
+    name: server_config_defaults
+
+# Set variables for the role
+- name: Register variables (server_config)...
+  ansible.builtin.set_fact:
+    server_config_vars: "{{ server_config_defaults.server_config | combine(server_config | default({}), recursive=True) }}"
+  when: server_config is defined
+
+# TODO: Send message to Kafka bus
+- name: Publish message to Kafka bus...
+  ansible.builtin.debug:
+    msg: "TODO: Publish message to Kafka bus..."
+  when: kafka_bootstrap_servers is defined
+
+# -------------------------------------------------------
+- name: Start first_config action...
+  ansible.builtin.include_tasks: first_config.yml
+  when: action == "first_config"
+
+- name: Start configure_server action...
+  ansible.builtin.include_tasks: configure_server.yml
+  when: action == "configure_server"
+
+- name: Start configure_vault action...
+  ansible.builtin.include_tasks: configure_vault.yml
+  when: action == "configure_vault"
+
+- name: Start initialize action...
+  ansible.builtin.include_tasks: initialize.yml
+  when: action == "initialize"
+
+- name: Start platform_check action...
+  ansible.builtin.include_tasks: platform_check.yml
+  when: action == "platform_check"
+
+# -------------------------------------------------------

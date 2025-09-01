@@ -1,0 +1,48 @@
+---
+
+#########################################################
+## Gather package information                          ##
+#########################################################
+
+# Gather information about the already installed packages
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+#########################################################
+## Check if epel-release package has been installed    ##
+#########################################################
+
+# Install epel-release if not installed
+- name: Install epel-release if not installed
+  ansible.builtin.dnf:
+    name: epel-release
+    state: present
+  become: yes
+  when: "'epel-release' not in ansible_facts.packages"
+
+#########################################################
+## Install clamav packages                             ##
+#########################################################
+
+# Install clamav packages
+- name: Install clamav packages
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - clamav
+      - clamav-update
+    state: present
+
+# Check if clamav is installed and do a version check
+- name: Verify if clamav is installed and check the version
+  ansible.builtin.command: clamscan --version
+
+#########################################################
+## Update the clamav virus database                    ##
+#########################################################
+
+# Update the clamav virus database
+- name: Update clamav virus database
+  become: true
+  ansible.builtin.command: freshclam

@@ -1,0 +1,44 @@
+---
+
+#########################################################
+## Server Config role defaults                      ##
+#########################################################
+
+# default role variables for the server-config role
+server_config:
+  # address is the URL to connect to the server.
+  address: ""
+  # username is the username to connect to the server.
+  username: "ansible"
+  # password is the password to connect to the server.
+  password: ""
+  # token is the token used to authenticate to the server.
+  token: ""
+
+  # metadata contains information about the role.
+  metadata:
+    name: "server-config"
+    description: "Server-PSP Ansible role for configuring server settings."
+    version: "1.0.0"
+    maintainer: ""
+    maintainer_email: ""
+
+  # timezone is the timezone of the server. example: "Europe/Amsterdam".
+  timezone: "Europe/Amsterdam"
+
+  # secrets contains the configuration for the vault used for storing secrets and configuration data.
+  secrets:
+    # secret_name is the unique id of the vault used for storing secrets and configuration data.
+    # default is {{ansible_fqdn }}.
+    secret_name: "{{ ansible_fqdn | replace('.', '-') }}"
+    # secret_engine_name is the name of the vault used for storing secrets and configuration data.
+    # example: "cisco-callmanager", "nexus-repository".
+    secret_engine_name: "devices"
+    # secret_engine_description is the description of the vault used for storing secrets and
+    # configuration data. example: "Secrets for Sonatype Nexus Repository.".
+    secret_engine_description: "Secrets for devices."
+
+
+
+# server_hostname is the hostname of the server. example: "server".
+server_hostname: ""

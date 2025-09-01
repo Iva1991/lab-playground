@@ -1,0 +1,24 @@
+---
+
+#########################################################
+## Podman Update Container module                      ##
+#########################################################
+# Validate global variables.
+- name: Validate variables for Podman update_container module...
+  ansible.builtin.assert:
+    that: "varitem is defined"
+    fail_msg: "Required variable '{{ varitem }}' has not been provided."
+    quiet: true
+  loop_control:
+    loop_var: varitem
+  loop:
+    - container_name
+
+# Show information message
+- name: "This part is not (yet) implemented."
+  ansible.builtin.debug:
+    msg: "This part is not (yet) implemented."
+
+# Stop playbook
+- name: Stop playbook
+  ansible.builtin.meta: end_play
