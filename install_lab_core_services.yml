@@ -108,7 +108,11 @@
         name: vault
       vars:
         action: "install"
-        vault_repository_url: "docker.io/hashicorp/vault"
+        vault:
+          container:
+            repository_url: "docker.io/hashicorp/vault"
+            repository_tag: "1.20"
+        #vault_repository_url: "docker.io/hashicorp/vault"
 
     # Add server config to vault
     - name: Configure vault
@@ -133,11 +137,13 @@
         name: nexus-repository
       vars:
         action: "install"
-        nexus_repository_url     : "docker.io/sonatype/nexus3"
-        nexus_repository_vault_id: "{{ server_hostname }}"
-        # automation_username    : "" # defined at playbook level
-        # automation_password    : "" # defined at playbook level
-        # automation_email       : "" # defined at playbook level
+        nexus_repository:
+          container:
+            # repository_url: "docker.io/sonatype/nexus3"
+            repository_tag: "3.82.1"
+          secrets:
+            secret_name: "{{ server_hostname }}"
+ 
 
     # Create repository
     - name: Create repository (files)...
