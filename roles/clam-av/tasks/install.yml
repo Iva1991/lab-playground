@@ -31,6 +31,8 @@
   ansible.builtin.dnf:
     name:
       - clamav
+      - clamd
+      - clamav-lib
       - clamav-update
     state: present
 
@@ -46,3 +48,15 @@
 - name: Update clamav virus database
   become: true
   ansible.builtin.command: freshclam
+
+# Verify the clamav virus database update
+- name: Verify the clamav virus database update
+  ansible.builtin.command: freshclam --show-progress
+
+#########################################################
+## Run ClamAV Daemon                                   ##
+#########################################################
+
+- name: Start and enable clamd@scan service
+  ansible.builtin.include_tasks:
+    file: run_service.yml

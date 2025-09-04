@@ -1,0 +1,76 @@
+---
+
+#########################################################
+## Run ClamAV Daemon                                   ##
+#########################################################
+
+# Check if the ClamAV configuration file exists
+- name: Check if /etc/clamd.d/scan.conf exists
+  ansible.builtin.stat:
+    path: /etc/clamd.d/scan.conf
+  register: clamd_scan_conf
+
+# Fail the task if the configuration file does not exist
+- name: Fail if /etc/clamd.d/scan.conf does not exist
+  ansible.builtin.fail:
+    msg: "/etc/clamd.d/scan.conf is missing. Please ensure it exists and has the required options."
+  when: not clamd_scan_conf.stat.exists
+
+# Create clamav group if they do not exist
+- name: Create clamav group if it does not exist
+  ansible.builtin.group:
+    name: clamav
+    state: present
+
+# Create clamav user if they do not exist
+- name: Create clamav user and group if they do not exist
+  ansible.builtin.user:
+    name: clamav
+    group: clamav
+    state: present
+
+# Create user and group for clamav if they do not exist
+#- name: Ensure clamav user and group exist
+#  ansible.builtin.getent:
+#    database: passwd
+#    key: clamav
+#  register: clamav_user
+#  ignore_errors: yes
+
+# Uncomment the necessary lines in the configuration file
+- name: Ensure necessary options are set in /etc/clamd.d/scan.conf
+  ansible.builtin.lineinfile:
+    path: /etc/clamd.d/scan.conf
+    regexp: '^#?LocalSocket\s+/run/clamd.scan/clamd.sock'
+    line: 'LocalSocket /var/run/clamd.scan/clamd.sock'
+    state: present
+
+- name: Ensure ClamAV User set in /etc/clamd.d/scan.conf
+  ansible.builtin.lineinfile:
+    path: /etc/clamd.d/scan.conf
+    insertafter: '^LocalSocket\s+/var/run/clamd.scan/clamd.sock'
+    line: 'User clamav'
+    state: present
+
+# Change ownership of the configuration file
+- name: Change ownership of /etc/clamd.d/scan.conf to clamav user and group
+  ansible.builtin.file:
+    path: /etc/clamd.d/scan.conf
+    owner: clamav
+    group: clamav
+    state: file
+
+# Create the directory for the socket file and set ownership
+- name: Ensure /var/run/clamd.scan directory exists with correct ownership
+  ansible.builtin.file:
+    path: /var/run/clamd.scan
+    owner: clamav
+    group: clamav
+    state: directory
+
+# Start and enable the clamd@scan service
+- name: Start and enable clamd@scan service
+  ansible.builtin.systemd:
+    name: clamd@scan.service
+    enabled: yes
+    state: started

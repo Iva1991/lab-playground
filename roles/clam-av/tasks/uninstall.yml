@@ -4,22 +4,28 @@
 ## Uninstall                ##
 ##############################
 
+# Gather package facts
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
 # Remove clamav/clamd packages if these are present
 - name: Remove clamav packages if present
   ansible.builtin.dnf:
     name:
       - clamav
-      - clamav-update
-      - clamav-server
-      - clamav
-      - clamd
-      - clamscan
       - clamav-lib
       - clamav-update
+      - clamav-filesystem
+      - clamav-freshclam
+      - clambc
+      - clamconf
+      - clamdscan
+      - clamdtop
+      - clamonacc
+      - clamscan
+      - clamsubmit
     state: absent
-  when: 
-    - "'clamav' in ansible_facts.packages"
-    - "'clamd' in ansible_facts.packages"
 
 # Remove clamav/clamd configuration files
 - name: Remove clamav configuration files
@@ -29,26 +35,19 @@
   loop:
     - /etc/clamav
     - /etc/clamd
-    - /clam/clamd.d
-    - /var/lib/clamav
-    - /var/log/clamav
-    - /run/clamd.scan
     - /etc/clamd.d
     - /etc/clamd.d/scan.conf
     - /etc/freshclam.conf
-    - /usr/bin/freshclam
-    - /usr/lib/systemd/system/clamav-freshclam.service
-    - /usr/lib/systemd/system/clamav-freshclam-once.service
-    - /usr/lib/systemd/system/clamav-freshclam-once.timer
-    - /usr/lib/modules/5.14.0-570.17.1.el9_6.x86_64/kernel/drivers/thermal/intel/intel_powerclamp.ko.xz
-    - /usr/lib/modules/5.14.0-570.33.2.el9_6.x86_64/kernel/drivers/thermal/intel/intel_powerclamp.ko.xz
-    - /usr/lib64/libclamav.so.12
-    - /usr/lib64/libclammspack.so.0
-    - /usr/lib64/libclammspack.so.0.8.0
-    - /usr/lib64/libfreshclam.so.3.0.2
-    - /usr/lib64/libfreshclam.so.3
-    - /usr/lib64/libclamav.so.12.0.3
-    - /usr/share/licenses/clamav-lib
-    - /usr/share/licenses/clamav-lib/LICENSES.dependencies
-    - /usr/share/man/man1/freshclam.1.gz
-    - /usr/share/man/man5/freshclam.conf.5.gz
+
+# Remove leftover - name: Remove leftover ClamAV binaries
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/bin/clambc
+    - /usr/bin/clamconf
+    - /usr/bin/clamdscan
+    - /usr/bin/clamdtop
+    - /usr/bin/clamonacc
+    - /usr/bin/clamscan
+    - /usr/bin/clamsubmit

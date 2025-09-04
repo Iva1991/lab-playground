@@ -1,12 +1,12 @@
 ---
 
-- name: Install ClamAV
+- name: install ClamAV
   hosts: lab_core_services
   become: yes
   tasks:
 
-  # Install ClamAV and Clamd virus scanner
-  - name: Install ClamAV Virusscaner
+  # install ClamAV and Clamd virus scanner
+  - name: install ClamAV Virusscaner
     ansible.builtin.include_role:
       name: clam-av
     vars:    
