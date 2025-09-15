@@ -30,7 +30,10 @@
   become: true
   ansible.builtin.dnf:
     name:
+      - vim
       - clamav
+      - clamav-server
+      - clamav-server-systemd
       - clamd
       - clamav-lib
       - clamav-update
@@ -60,3 +63,11 @@
 - name: Start and enable clamd@scan service
   ansible.builtin.include_tasks:
     file: run_service.yml
+
+#########################################################
+## Create an clamdscan-root executable to scan system  ##
+#########################################################
+
+- name: Create clamdscan-root script
+  ansible.builtin.include_tasks:
+    file: create_scanfile.yml

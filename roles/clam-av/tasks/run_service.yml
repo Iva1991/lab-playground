@@ -1,20 +1,22 @@
 ---
 
 #########################################################
-## Run ClamAV Daemon                                   ##
+## Run Clamd Daemon                                   ##
 #########################################################
 
-# Check if the ClamAV configuration file exists
-- name: Check if /etc/clamd.d/scan.conf exists
+# Check if the Clamd configuration file exists
+- name: Check if /etc/clamd.d/clamd.conf exists
   ansible.builtin.stat:
-    path: /etc/clamd.d/scan.conf
-  register: clamd_scan_conf
+    path: /etc/clamd.d/clamd.conf
+  register: clamd_conf
 
-# Fail the task if the configuration file does not exist
-- name: Fail if /etc/clamd.d/scan.conf does not exist
-  ansible.builtin.fail:
-    msg: "/etc/clamd.d/scan.conf is missing. Please ensure it exists and has the required options."
-  when: not clamd_scan_conf.stat.exists
+# Copy the default configuration file if it does not exist
+- name: Copy default clamd.conf if it does not exist
+  ansible.builtin.copy:
+    src: /usr/share/doc/clamd/clamd.conf
+    dest: /etc/clamd.d/clamd.conf
+    remote_src: yes
+  when: not clamd_conf.stat.exists
 
 # Create clamav group if they do not exist
 - name: Create clamav group if it does not exist
@@ -29,48 +31,81 @@
     group: clamav
     state: present
 
-# Create user and group for clamav if they do not exist
-#- name: Ensure clamav user and group exist
-#  ansible.builtin.getent:
-#    database: passwd
-#    key: clamav
-#  register: clamav_user
-#  ignore_errors: yes
-
 # Uncomment the necessary lines in the configuration file
-- name: Ensure necessary options are set in /etc/clamd.d/scan.conf
+- name: Ensure necessary options are set in /etc/clamd.d/clamd.conf
   ansible.builtin.lineinfile:
-    path: /etc/clamd.d/scan.conf
-    regexp: '^#?LocalSocket\s+/run/clamd.scan/clamd.sock'
-    line: 'LocalSocket /var/run/clamd.scan/clamd.sock'
+    path: /etc/clamd.d/clamd.conf
+    line: 'LocalSocket /run/clamd.scan/clamd.sock'
+    regexp: '^#?LocalSocket\s+/run/clamd.<SERVICE>/clamd.sock'
     state: present
 
-- name: Ensure ClamAV User set in /etc/clamd.d/scan.conf
+- name: Ensure ClamAV User set in /etc/clamd.d/clamd.conf
   ansible.builtin.lineinfile:
-    path: /etc/clamd.d/scan.conf
-    insertafter: '^LocalSocket\s+/var/run/clamd.scan/clamd.sock'
+    path: /etc/clamd.d/clamd.conf
     line: 'User clamav'
+    insertafter: '^LocalSocket\s+/run/clamd.scan/clamd.sock'
     state: present
 
 # Change ownership of the configuration file
-- name: Change ownership of /etc/clamd.d/scan.conf to clamav user and group
+- name: Change ownership of /etc/clamd.d/clamd.conf to clamav user and group
   ansible.builtin.file:
-    path: /etc/clamd.d/scan.conf
+    path: /etc/clamd.d/clamd.conf
     owner: clamav
     group: clamav
     state: file
 
 # Create the directory for the socket file and set ownership
-- name: Ensure /var/run/clamd.scan directory exists with correct ownership
+- name: Ensure /run/clamd.scan directory exists with correct ownership
   ansible.builtin.file:
-    path: /var/run/clamd.scan
+    path: /run/clamd.scan
     owner: clamav
     group: clamav
     state: directory
 
-# Start and enable the clamd@scan service
-- name: Start and enable clamd@scan service
+# Create a systemd-tempfiles file to manage the socket directory
+- name: Create systemd-tempfiles configuration for clamd.conf
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/clamd.conf
+    content: |
+      d /run/clamd.scan 0755 clamav clamav -
+  
+# Reload systemd to reload the systemd-tmpfiles configuration
+- name: Reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+  become: true
+
+# Wait for a moment to ensure systemd has reloaded
+- name: Pause for a moment to ensure systemd has reloaded
+  ansible.builtin.pause:
+    seconds: 10
+
+# copy the unit file for clamd service to the systemd directory
+- name: Copy clamd.service unit file to systemd directory
+  ansible.builtin.copy:
+    src: /usr/lib/systemd/system/clamd@.service
+    dest: /etc/systemd/system/clamd.service
+    remote_src: yes
+
+# Replace the ExecStart line in the clamd.service file
+- name: Update ExecStart in clamd.service
+  ansible.builtin.replace:
+    path: /etc/systemd/system/clamd.service
+    regexp: '^ExecStart = /usr/sbin/clamd -c /etc/clamd.d/%i.conf'
+    replace: 'ExecStart=/usr/sbin/clamd -c /etc/clamd.d/clamd.conf'
+
+# Reload systemd to reload the configuration
+- name: Reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+  become: true
+
+# Wait for a moment to ensure systemd has reloaded
+- name: Pause for a moment to ensure systemd has reloaded
+  ansible.builtin.pause:
+    seconds: 10
+
+# Start and enable the clamd.service
+- name: Start and enable clamd.service
   ansible.builtin.systemd:
-    name: clamd@scan.service
+    name: clamd.service
     enabled: yes
     state: started
