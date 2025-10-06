@@ -1,84 +1,102 @@
 ---
 
 #########################################################
-## Kafka role defaults                                 ##
+## Kafka role defaults                          ##
 #########################################################
 
 # default role variables for the kafka role
-kafka:
-  # bootstrap_servers is a list of Kafka bootstrap servers.
-  bootstrap_servers: []
-  # topic is the Kafka topic to publish messages to.
-  topic: ""
+kafka_pod:
+  # address is the URL to connect to the Kafka server.
+  address: ""
+  # username is the username to connect to the Kafka server.
+  username: ""
+  # password is the password to connect to the Kafka server.
+  password: ""
   # token is the token used to authenticate to the Kafka server.
   token: ""
     
   # metadata contains information about the role.
   metadata:
     name: "kafka"
-    description: "Kafka messaging system."
-    version: "1.0.0"
-    maintainer: ""
-    maintainer_email: ""
+    description: "Ansible role for Kafka-server and kafka-ui."
+    version: "0.0.4"
+    maintainer: "Team UCC Automation"
+    maintainer_email: "m.venema.04@mindef.nl"
+  # KAFKA-SERVER-POD
+  pods:
+    pod:
+    # name is the name of the pod used in podman or docker. example: "vault.pod".
+      pod_name: "kafka.pod"
+    # network is the name of the network used in the pod. example: "vault_network".
+      pod_network: "kafka_network"
+    # network_ports is a list of ports used in the container. example: "8200:8200", "8201:8201".
+      pod_network_ports: [ "9092:9092", "8090:8080" ]
+    # uninstall is a boolean value to indicate if the pod should be uninstalled. Default is false.
+      uninstall: false
+    # platform is the platform used for the pod. example: "podman", "docker", "kubernetes". Default is "podman".
+      platform: "podman"
 
-  # application is the Kafka application configuration.
-  application:
-    # validate_certs configures if the certificate of the application server should be validated. example: true or false.
-    validate_certs: false
-
-  # users contains the configuration for the automation user used for the Kafka server.
-  users:
-    # automation_username is the username used for the automation user. example: "kafka-automation".
-    automation_username: "kafka-automation"
-    # automation_password is the password used for the automation user. example: "kafka-automation-password".
-    automation_password: "kafka-automation-password"
-    # automation_email is the email address used for the automation user. example: "kafka-automation@me.local".
-    automation_email: "kafka-automation@me.local"
-
-  # container contains the configuration for the Kafka container.
-  container:
+  # KAFKA-UI-CONTAINER
+  containers:
+    ui:
+      container_name: "kafka_ui"
     # name is the name of the container used in podman or docker. example: "vault".
-    name: "kafka"
-    # platform is the platform used for the container. example: "podman" or "docker".
-    platform: "podman"    
-    # uninstall indicates if the container should be uninstalled or not. example: true or false. Default is false.
-    uninstall: false
-    # repository_url can be a URL to a docker image or a tar file. example: "https://docker.io/bitnami/kafka" or "/tmp/kafka.67.1.tar", "https://192.168.1.1/repo/kafka.tar".
-    repository_url: "docker.io/bitnami/kafka"
-    # repository_tag can be a tag of the image or a version of the tar file. example: "3.67.1" or "latest" Default is "latest".
-    # repository_tag: "latest"   
+      container_volumes:
+        - "kafka-ui:/etc/kafkaui:Z"
+      volume_mode: "0777"
+      container_repository_url: "docker.io/provectuslabs/kafka-ui" #"mindef.nl/containers/kafka-ui_0.28.4.tar"
+      container_repository_tag: "latest"
+    # platform is the platform used for the container. example: "podman", "docker". Default is "podman".
+      platform: "podman"
+    # uninstall indicates if the container should be uninstalled. Default is false.
+      uninstall: false
+    # repository_url can be a URL to a docker image or a tar file. example: "https://docker.io/sonatype/nexus3" or "/tmp/nexus3.67.1.tar", "https://192.168.1.1/repo/nexus.tar".
+    # repository_url: docker.io/apache/kafka #"mindef.nl/containers/kafka-server_0.0.75.tar"
     # repository_checksum can be a checksum of the container file. example: "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" or "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef".
-    # repository_checksum: ""
+    # repository_checksum: "" TODO
     # repository_checksum_algorithm can be a checksum algorithm of the container file. example: "sha256", sha512", "md5".
-    # repository_checksum_algorithm: "sha256"
-   # ports is a list of ports used in the container. example: ["8081:8081"] or ["8081:8081", "8082:8082"].
-    ports:
-      - "9092:9092"
-    # volumes is a list of volumes used in the container. example: ["vault/config:/vault/config:Z"] or ["vault/config:/vault/config:Z", "vault/file:/vault/file:Z"].
-    volumes:
-      - "kafka/kafka-data:/kafka-data:Z"
-    # volume_mode is the mode of the volume used in the container. example: "0777" or "0755". Default is "0777".
-    volume_mode: "0777"
+    # repository_checksum_algorithm: "" TODO
+    # repository_tag can be a tag of the image or a version of the tar file. example: "3.67.1" or "latest" Default is "latest".
+    # repository_tag: "" TODO
     # environment is a list of environment variables used in the container.
-    # environment:
-    # healthcheck is the command used to check if the container is healthy. example: "curl -f http://localhost:8080/health || exit 1".
-    healthcheck: "curl -X 'GET' http://localhost:8081/service/rest/v1/status/check -H 'accept: application/json' -H 'NX-ANTI-CSRF-TOKEN: 0.4986100467581339' -H 'X-Nexus-UI: true' || exit 1"
-    # healthcheck_start is the time to wait before starting the health check. example: "30s".
-    healthcheck_start: "30s"
-    # healthcheck_interval is the interval between health checks. example: "30s".
-    healthcheck_interval: "30s"
-    # healthcheck_timeout is the timeout for the health check. example: "30s".
-    healthcheck_timeout: "30s"
-    # healthcheck_retries is the number of retries for the health check. example: "3".
-    healthcheck_retries: 5
-    # quadlet_options is a list of options used in the container. example: ["Environment=NODE_ENV=production", "HealthCmd='wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1 '"].
-    # quadlet_options:
 
-  # secrets contains the configuration for the vault used for storing secrets and configuration data.
-  secrets:
-    # secret_name is the unique id of the vault used for storing secrets and configuration data. default is {{ansible_fqdn }}.
-    secret_name: "{{ ansible_fqdn | replace('.', '-') }}"
-    # secret_engine_name is the name of the vault used for storing secrets and configuration data. example: "nexus-repository".
-    secret_engine_name: "kafka"
-    # <container_name>_secret_engine_description is the description of the vault used for storing secrets and configuration data. example: "Secrets for Sonatype Nexus Repository.".
-    secret_engine_description: "Secrets for Bitnami Kafka."
+      container_env:
+        DYNAMIC_CONFIG_ENABLED: true
+        AUTH_TYPE: "LOGIN_FORM"
+        SPRING_SECURITY_USER_NAME: admin
+        SPRING_SECURITY_PASSWORD: pass
+
+      containter_healthcheck:
+      container_quadlet_options:
+        - |
+          [Unit]
+          Description=Kafka UI
+          Requires=container_kafka_server.service
+          After=container_kafka_server.service
+    
+    # KAFKA-SERVER-CONTAINER
+    server:
+      container_name: "kafka_server"
+      platform: "podman"
+      container_repository_url: "docker.io/apache/kafka"
+      container_repository_tag: 4.0.0
+      container_volumes:
+        - "kafka/data:/var/lib/kafka/data:Z"
+      volume_mode: "0777"
+      container_env:
+        CLUSTER_ID: "KAFKA" # A unique ID for the Kafka cluster
+        KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://{{ ansible_default_ipv4.address }}:9092"
+        KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true" # Kafka will automatically create topics if needed.
+        KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER" # Defines the controller listener.
+        KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093" # Defines the controller voters.
+        KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+        KAFKA_NODE_ID: 1 # A unique ID for the Kafka instance.
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Since we're running one broker, one replica is enough.
+        KAFKA_PROCESS_ROLES: "broker,controller" # Kafka acts as both broker and controller.
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      container_healthcheck: "/opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka_server:9092 || exit 1" 
+      container_healthcheck_start: "60s"
+
+kafka_server_secret_engine_name: "kafka-pod"
+kafka_server_secret_engine_description: "Secrets for Apache Kafka server and Kafka-UI"

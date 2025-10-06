@@ -32,7 +32,7 @@
 # Merge role defaults, include nested variables
 - name: Merge role defaults with collected variables...
   ansible.builtin.set_fact:
-    kafka_vars: "{{ kafka_defaults.kafka | combine( kafka | default({}), recursive=true ) }}"
+    kafka_vars: "{{ kafka_defaults.kafka_pod | combine( kafka_pod | default({}), recursive=true ) }}"
 
 # TODO: Send message to Kafka bus
 - name: Publish message to Kafka bus...

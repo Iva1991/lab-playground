@@ -1,0 +1,171 @@
+---
+
+#########################################################
+## Reboot System before installation                   ##
+#########################################################
+
+# This is to ensure podman is able to pull the container
+# and avoid certificate issues due to wrong system date
+
+# Get system date (YYYY-MM-DD) of the managed node
+- name: Get system date (YYYY-MM-DD)
+  ansible.builtin.command: date +%Y-%m-%d
+  register: system_date
+
+# Get today's date (YYYY-MM-DD) of the control node
+- name: Get today's date (YYYY-MM-DD)
+  ansible.builtin.command: date +%Y-%m-%d --date="now"
+  delegate_to: localhost
+  register: today_date
+
+# Reboot if date is in the past than actual date
+- name: Reboot if system date is not today
+  ansible.builtin.reboot:
+    reboot_timeout: 60
+    pre_reboot_delay: 10
+  when: system_date.stdout != today_date.stdout
+
+#########################################################
+## Kafka install action                                ##
+#########################################################
+
+#########################################################
+## Pre-installation uninstall                          ##
+#########################################################
+
+# Run uninstall if uninstall is set
+- name: Run uninstall playbook if set
+  ansible.builtin.include_tasks: uninstall.yml
+  ignore_errors: true
+  when: kafka_vars.container.uninstall == true
+
+#########################################################
+## Installation on podman                              ##
+#########################################################
+
+- name: Install container on Podman...
+  when: kafka_vars.container.platform == "podman"
+  block:
+
+    # Gather installed packages
+    - name: Gather installed packages
+      ansible.builtin.package_facts:
+        manager: auto
+
+    # Check if podman is detected
+    - name: Check if podman is detected
+      ansible.builtin.assert:
+        that: '"podman" in ansible_facts.packages'
+        fail_msg: "Podman is not installed. Please install Podman first. Cannot continue..."
+
+    #####################################################
+    ## Volume configuration                            ##
+    #####################################################
+
+    # Create volumes
+    - name: Create configuration folders...
+      ansible.builtin.include_role:
+        name: podman
+      vars:
+        action: create_volumes
+        container_volumes: "{{ kafka_vars.container.volumes }}"
+        volume_mode: "0777"
+
+    #####################################################
+    ## Firewall configuration                          ##
+    #####################################################
+
+    # Open firewall ports
+    - name: Open firewall ports...
+      become: true
+      ansible.builtin.firewalld:
+        port: "{{ kafka_vars.container.ports[0].split(':')[0] }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+
+    #####################################################
+    ## Import container                                ##
+    #####################################################
+
+    # Import container
+    - name: "Install {{ kafka_vars.container.name }} container on podman"
+      ansible.builtin.include_role:
+        name: podman
+      vars:
+        action: import_container
+        container_repository_url: "{{ kafka_vars.container.repository_url }}"
+        container_repository_tag: "{{ kafka_vars.container.repository_tag | default('latest') }}"
+        container_repository_checksum: "{{ kafka_vars.container.repository_checksum | default(omit) }}"
+        container_repository_checksum_algorithm: "{{ kafka_vars.container.repository_checksum_algorithm | default(omit) }}"
+        container_name: "{{ kafka_vars.container.name }}"
+        container_ports: "{{ kafka_vars.container.ports }}"
+        container_volumes: "{{ kafka_vars.container.volumes }}"
+        container_env: "{{ kafka_vars.container.environment | default(omit) }}"
+        container_healthcheck: "{{ kafka_vars.container.healthcheck | default(omit) }}"
+        container_healthcheck_fail: "{{ kafka_vars.container.healthcheck_fail | default('none') }}"
+        container_healthcheck_retries: "{{ kafka_vars.container.healthcheck_retries | default(omit) }}"
+        container_healthcheck_interval: "{{ kafka_vars.container.healthcheck_interval | default(omit) }}"
+        container_healthcheck_timeout: "{{ kafka_vars.container.healthcheck_timeout | default(omit) }}"
+        container_healthcheck_start: "{{ kafka_vars.container.healthcheck_start | default(omit) }}"
+
+#########################################################
+## Installation via kubernetes                         ##
+#########################################################
+
+- name: Install container on Kubernetes...
+  when: kafka_vars.container.platform == "kubernetes"
+  block:
+
+    # Debug message
+    - name: Debug message
+      ansible.builtin.debug:
+        msg: "Install Kafka via kubernetes"
+
+    # Show information message
+    - name: This part is not (yet) implemented.
+      ansible.builtin.debug:
+        msg: "This part is not (yet) implemented."
+
+    # Stop playbook
+    - name: Stop playbook
+      ansible.builtin.meta: end_play
+
+#########################################################
+## Installation on host                                ##
+#########################################################
+
+- name: Install application on host...
+  when: kafka_vars.container.platform == "host"
+  block:
+
+    # Debug message
+    - name: Debug message
+      ansible.builtin.debug:
+        msg: "Install application on host"
+
+    # Show information message
+    - name: This part is not (yet) implemented.
+      ansible.builtin.debug:
+        msg: "This part is not (yet) implemented."
+
+    # Stop playbook
+    - name: Stop playbook
+      ansible.builtin.meta: end_play
+
+#########################################################
+## Configuration                                       ##
+#########################################################
+
+# Configure Kafka
+- name: Start configure task...
+  ansible.builtin.include_tasks: configure.yml
+
+#########################################################
+## Post-install                                        ##
+#########################################################
+
+# Unset variables
+#- name: Unset variables...
+#  ansible.builtin.set_fact:
+    

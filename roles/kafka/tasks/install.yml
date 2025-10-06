@@ -5,21 +5,21 @@
 #########################################################
 
 #########################################################
-## Pre-installation uninstall                          ##
+##  pre-installation uninstall                         ##
 #########################################################
 
 # Run uninstall if uninstall is set
 - name: Run uninstall playbook if set
   ansible.builtin.include_tasks: uninstall.yml
   ignore_errors: true
-  when: kafka_vars.container.uninstall == true
+  when: kafka_vars.pods.pod.uninstall == true
 
 #########################################################
-## Installation on podman                              ##
+##  Installation on podman                             ##
 #########################################################
 
-- name: Install container on Podman...
-  when: kafka_vars.container.platform == "podman"
+- name: Install {{ kafka_vars.pods.pod_name }} container on Podman...
+  when: kafka_vars.pods.pod.platform == "podman"
   block:
 
     # Gather installed packages
@@ -27,120 +27,181 @@
       ansible.builtin.package_facts:
         manager: auto
 
-    # Check if podman is detected
-    - name: Check if podman is detected
+    # Check if podman is installed
+    - name: Gather information
       ansible.builtin.assert:
-        that: '"podman" in ansible_facts.packages'
-        fail_msg: "Podman is not installed. Please install Podman first. Cannot continue..."
-
-    #####################################################
-    ## Volume configuration                            ##
-    #####################################################
-
-    # Create volumes
-    - name: Create configuration folders...
-      ansible.builtin.include_role:
-        name: podman
-      vars:
-        action: create_volumes
-        container_volumes: "{{ kafka_vars.container.volumes }}"
-        volume_mode: "0777"
-
-    #####################################################
-    ## Firewall configuration                          ##
-    #####################################################
-
-    # Open firewall ports
-    - name: Open firewall ports...
-      become: true
-      ansible.builtin.firewalld:
-        port: "{{ kafka_vars.container.ports[0].split(':')[0] }}/tcp"
-        permanent: true
-        state: enabled
-        immediate: true
-
-    #####################################################
-    ## Import container                                ##
-    #####################################################
-
-    # Import container
-    - name: "Install {{ kafka_vars.container.name }} container on podman"
-      ansible.builtin.include_role:
-        name: podman
-      vars:
-        action: import_container
-        container_repository_url: "{{ kafka_vars.container.repository_url }}"
-        container_repository_tag: "{{ kafka_vars.container.repository_tag | default('latest') }}"
-        container_repository_checksum: "{{ kafka_vars.container.repository_checksum | default(omit) }}"
-        container_repository_checksum_algorithm: "{{ kafka_vars.container.repository_checksum_algorithm | default(omit) }}"
-        container_name: "{{ kafka_vars.container.name }}"
-        container_ports: "{{ kafka_vars.container.ports }}"
-        container_volumes: "{{ kafka_vars.container.volumes }}"
-        container_env: "{{ kafka_vars.container.environment | default(omit) }}"
-        container_healthcheck: "{{ kafka_vars.container.healthcheck | default(omit) }}"
-        container_healthcheck_fail: "{{ kafka_vars.container.healthcheck_fail | default('none') }}"
-        container_healthcheck_retries: "{{ kafka_vars.container.healthcheck_retries | default(omit) }}"
-        container_healthcheck_interval: "{{ kafka_vars.container.healthcheck_interval | default(omit) }}"
-        container_healthcheck_timeout: "{{ kafka_vars.container.healthcheck_timeout | default(omit) }}"
-        container_healthcheck_start: "{{ kafka_vars.container.healthcheck_start | default(omit) }}"
+        that: "'podman' in ansible_facts.packages"
+        fail_msg: "Podman is not installed. Please install podman first. Cannot continue..."
 
 #########################################################
-## Installation via kubernetes                         ##
+##  Volume configuration                               ##
 #########################################################
 
-- name: Install container on Kubernetes...
-  when: nexus_repository_vars.container.platform == "kubernetes"
-  block:
+# Show gathered variables for debug purposes
+- name: Show gathered variables...
+  ansible.builtin.debug:
+    msg: "{{ kafka_vars }}"
 
-    # Debug message
-    - name: Debug message
-      ansible.builtin.debug:
-        msg: "Install Sonatype Nexus via kubernetes"
+# Create volumes for Kafka
+- name: Create configuration folders ({{ kafka_vars.containers.server.container_name }})...
+  ansible.builtin.include_role:
+    name: podman
+  vars:
+    action: create_volumes
+    container_volumes: "{{ kafka_vars.containers.server.container_volumes }}"
+    volume_mode: 0777
 
-    # Show information message
-    - name: This part is not (yet) implemented.
-      ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
-
-    # Stop playbook
-    - name: Stop playbook
-      ansible.builtin.meta: end_play
-
-#########################################################
-## Installation on host                                ##
-#########################################################
-
-- name: Install application on host...
-  when: nexus_repository_vars.container.platform == "host"
-  block:
-
-    # Debug message
-    - name: Debug message
-      ansible.builtin.debug:
-        msg: "Install application on host"
-
-    # Show information message
-    - name: This part is not (yet) implemented.
-      ansible.builtin.debug:
-        msg: "This part is not (yet) implemented."
-
-    # Stop playbook
-    - name: Stop playbook
-      ansible.builtin.meta: end_play
+# Create volumes for Kafka-UI
+- name: Create configuration folders ({{ kafka_vars.containers.ui.container_name }})...
+  ansible.builtin.include_role:
+    name: podman
+  vars:
+    action: create_volumes
+    container_volumes: "{{ kafka_vars.containers.ui.container_volumes }}"
+    volume_mode: 0777
 
 #########################################################
-## Configuration                                       ##
+##  Firewall configuration                             ##
 #########################################################
 
-# Configure Sonatype Nexus
-- name: Start configure task...
+# Open firewall ports
+- name: Open firewall ports ({{ kafka_vars.pod.pod_network_ports }})...
+  become: true
+  ansible.builtin.firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: yes
+  loop:
+    - 9092
+    - 8080
+    - 8042
+    - 8090
+
+#########################################################
+## Podman Network configuration                        ##
+#########################################################
+
+# Create Network configuration
+- name: Create podman network for {{ kafka_vars.pods.pod.pod_network }}...
+  ansible.builtin.include_role:
+    name: podman
+  vars:
+    action: create_network
+    container_network: "{{ kafka_vars.pods.pod.pod_network }}"
+
+#########################################################
+## Podman Pod configuration                            ##
+#########################################################
+
+# Create Pods
+- name: Create Podman pod for {{ kafka_vars.pods.pod.pod_name }}...
+  ansible.builtin.include_role:
+    name: podman
+  vars:
+    action: create_pod
+    container_pod: "{{ kafka_vars.pods.pod.pod_name }}"
+    container_pod_ports: "{{ kafka_vars.pods.pod.pod_network_ports }}"
+    container_network: "{{ kafka_vars.pods.pod.pod_network }}"
+
+#####################################################
+## Import container                                ##
+#####################################################
+
+# Import container priming
+- name: "Install {{ kafka_vars.containers.server.container_name }} container in Pod"
+  ansible.builtin.include_role:
+      name: podman
+  vars:
+    action: import_container
+    container_pod: "{{ kafka_vars.pods.pod.pod_name }}"
+    container_name: "{{ kafka_vars.containers.server.container_name }}"
+    container_repository_url: "{{ kafka_vars.containers.server.container_repository_url }}"
+    container_repository_tag: "{{ kafka_vars.containers.server.container_repository_tag | default('latest') }}"
+    container_repository_checksum: "{{ kafka_vars.containers.server.container_repository_checksum | default(omit) }}"
+    container_repository_checksum_algorithm: "{{ kafka_vars.containers.server.container_repository_checksum_algorithm | default(omit) }}"
+    container_ports: "{{ kafka_vars.containers.server.container_ports }}"
+    container_volumes: "{{ kafka_vars.containers.server.container_volumes }}"
+    container_command: ""
+    container_env: "{{ kafka_vars.containers.server.container_env | default({}) }}"
+    container_healthcheck: "{{ kafka_vars.containers.server.container_healthcheck | default(omit) }}"
+    container_healthcheck_fail: "{{ kafka_vars.containers.server.container_healthcheck_fail | default('none') }}"
+    container_healthcheck_retries: "{{ kafka_vars.containers.server.container_healthcheck_retries | default(omit) }}"
+    container_healthcheck_interval: "{{ kafka_vars.containers.server.container_healthcheck_interval | default(omit) }}"
+    container_healthcheck_timeout: "{{ kafka_vars.containers.server.container_healthcheck_timeout | default(omit) }}"
+    container_healthcheck_start: "{{ kafka_vars.containers.server.container_healthcheck_start | default(omit) }}"
+    container_quadlet_options: "{{ kafka_vars.containers.server.container_quadlet_options | default(omit) }}"
+
+# Import container kafka-ui
+- name: "Install {{ kafka_vars.containers.ui.container_name }} container in Pod"
+  ansible.builtin.include_role:
+      name: podman
+  vars:
+    action: import_container
+    container_pod: "{{ kafka_vars.pods.pod.pod_name }}"
+    container_name: "{{ kafka_vars.containers.ui.container_name }}"
+    container_repository_url: "{{ kafka_vars.containers.ui.container_repository_url }}"
+    container_repository_tag: "{{ kafka_vars.containers.ui.container_repository_tag | default('latest') }}"
+    container_repository_checksum: "{{ kafka_vars.containers.ui.container_repository_checksum | default(omit) }}"
+    container_repository_checksum_algorithm: "{{ kafka_vars.containers.ui.container_repository_checksum_algorithm | default(omit) }}"
+    container_ports: "{{ kafka_vars.containers.ui.container_ports }}"
+    container_volumes: "{{ kafka_vars.containers.ui.container_volumes }}"
+    # container_command: "sh entrypoint.sh"
+    container_command: ""
+    container_env: "{{ kafka_vars.containers.ui.container_env | default({}) }}"
+    container_healthcheck: "{{ kafka_vars.containers.ui.container_healthcheck | default(omit) }}"
+    container_healthcheck_fail: "{{ kafka_vars.containers.ui.container_healthcheck_fail | default('none') }}"
+    container_healthcheck_retries: "{{ kafka_vars.containers.ui.container_healthcheck_retries | default(omit) }}"
+    container_healthcheck_interval: "{{ kafka_vars.containers.ui.container_healthcheck_interval | default(omit) }}"
+    container_healthcheck_timeout: "{{ kafka_vars.containers.ui.container_healthcheck_timeout | default(omit) }}"
+    container_healthcheck_start: "{{ kafka_vars.containers.ui.container_healthcheck_start | default(omit) }}"
+    container_quadlet_options: "{{ kafka_vars.containers.ui.container_quadlet_options | default(omit) }}"
+# Start container
+- name: Start Podman container...
+  ansible.builtin.include_role:
+    name: podman
+  vars:
+    action: start_container
+    container_pod: "{{ kafka_vars.pods.pod.pod_name }}"
+    container_name: "{{ item.container_name }}"
+  loop:
+    - container_name: "{{ kafka_vars.containers.server.container_name }}"
+    - container_name: "{{ kafka_vars.containers.ui.container_name }}"
+
+# Wait 30 seconds
+- name: Wait 30 seconds...
+  ansible.builtin.wait_for:
+    timeout: 30
+
+# Restart pod
+- name: Restart container
+  ansible.builtin.include_role:
+    name: podman
+  vars:
+    action: "restart_pod"
+    container_pod: "{{ kafka_vars.pods.pod.pod_name }}"
+
+# Configure application
+- name: Configure application
   ansible.builtin.include_tasks: configure.yml
+  vars:
+    action: configure
 
 #########################################################
 ## Post-install                                        ##
 #########################################################
 
 # Unset variables
-#- name: Unset variables...
-#  ansible.builtin.set_fact:
-    
+- name: Unset variables...
+  ansible.builtin.set_fact:
+    kafka_repository_url: null
+    kafka_repository_tag: null
+    kafka_repository_checksum: null
+    kafka_repository_checksum_algorithm: null
+    kafka_container_name: null
+    kafka_container_ports: null
+    kafka_container_volumes: null
+    kafka_container_env: null
+    kafka_container_user: null
+    kafka_container_user_details: null
+    kafka_container_user_uid: null

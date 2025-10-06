@@ -1,3 +1,286 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# vars file for kafka
+
+actions:
+# -------------------------------------------------------
+  # Deployment
+  - install:
+      description: "Installation and configuration of kafka."
+      category: "Deployment"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - kafka:
+            description: "Variables for kafka role."
+            icon: "media/icon_kafka.png"
+            required: false
+        - secret_name:
+            description: "Unique ID for Vault to identify kafka secrets."
+            icon: "media/icon_kafka.png"
+            required: false
+
+  - uninstall:
+      description: "Uninstallation of kafka. Removes containers and files."
+      category: "Deployment"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - keep_data:
+            description: "Keep data folder after uninstallation. Default is false."
+            icon: "media/icon_kafka.png"
+            required: false
+
+  - update:
+      description: "Update kafka to the latest version."
+      category: "Deployment"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - kafka:
+            description: "Variables for kafka role."
+            icon: "media/icon_kafka.png"
+            required: false
+        - vault_address:
+            description: "URL to the vault address for vault access, for example `http://localhost:8200`."
+            icon: "media/icon_vault.png"
+            required: true
+        - vault_token:
+            description: "Token for Vault access."
+            icon: "media/icon_vault.png"
+            required: true
+        - secret_name:
+            description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+            icon: "media/icon_psp.png"
+            required: true
+        - priming_staging_platform_appliance_repository_url:
+            description: "URL to the Priming and Staging Platform appliance repository."
+            icon: "media/icon_psp.png"
+            required: false
+        - pocketbase_repository_url:
+            description: "URL to the PocketBase repository."
+            icon: "media/icon_pocketbase.png"
+            required: false
+
+# ------------------------------ Configuration -----------------------------------------------------
+  # Configuration
+  - configure:
+      description: "Configure kafka."
+      category: "Configuration"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - kafka:
+            description: "Variables for kafka role."
+            icon: "media/icon_kafka.png"
+            required: false
+
+  - configure_vault:
+      description: "Configure Vault for kafka."
+      category: "Configuration"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - kafka:
+            description: "Variables for kafka role."
+            icon: "media/icon_kafka.png"
+            required: false
+        - vault_address:
+            description: "URL to the vault address for vault access, for example `http://localhost:8200`."
+            icon: "media/icon_vault.png"
+            required: true
+        - vault_token:
+            description: "Token for Vault access."
+            icon: "media/icon_vault.png"
+            required: true
+        - secret_name:
+            description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+            icon: "media/icon_psp.png"
+            required: false
+
+  - prepare_for_export:
+      description: "Prepare Priming and Staging Platform virtual machine for export."
+      category: "Configuration"
+      icon: "media/icon_kafka.png"
+
+# --------------------------------- Configuration ---------------------------------------
+  # Administration
+  - start:
+      description: "Start kafka Podman service."
+      category: "Administration"
+      icon: "media/icon_kafka.png"
+
+  - stop:
+      description: "Stop kafka Podman service."
+      category: "Administration"
+      icon: "media/icon_kafka.png"
+
+  - restart:
+      description: "Restart kafka Podman service."
+      category: "Administration"
+      icon: "media/icon_kafka.png"
+
+# -------------------------------------------------------
+  # Tasks
+  - import_users_from_ivplan:
+      description: "Import users from IV-Plan to kafka"
+      category: "Tasks"
+      icon: "media/icon_kafka.png"
+      parameters:
+          - vault_address:
+              description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+              icon: "media/icon_vault.png"
+              required: true
+          - vault_token:
+                description: "Token for Vault access."
+                icon: "media/icon_vault.png"
+                required: true
+          - secret_name:
+                description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+                icon: "media/icon_psp.png"
+                required: true
+          - filename:
+            description: "IV-Plan file to import users from."
+            icon: "media/icon_psp.png"
+            required: true
+
+  - import_devices_from_cisplan:
+      description: "Import devices from CIS-Plan to kafka"
+      category: "Tasks"
+      icon: "media/icon_kafka.png"
+      parameters:
+          - vault_address:
+              description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+              icon: "media/icon_vault.png"
+              required: true
+          - vault_token:
+                description: "Token for Vault access."
+                icon: "media/icon_vault.png"
+                required: true
+          - secret_name:
+                description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+                icon: "media/icon_psp.png"
+                required: true
+          - filename:
+            description: "IV-Plan file to import users from."
+            icon: "media/icon_psp.png"
+            required: true
+
+  - import_ivplan_to_vault:
+      description: "Import IV-Plan to kafka Vault. This will create a secret in Vault with the IV-Plan content."
+      category: "Tasks"
+      icon: "media/icon_kafka.png"
+      parameters:
+          - vault_address:
+              description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+              icon: "media/icon_vault.png"
+              required: true
+          - vault_token:
+                description: "Token for Vault access."
+                icon: "media/icon_vault.png"
+                required: true
+          - secret_name:
+                description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+                icon: "media/icon_psp.png"
+                required: true
+          - filename:
+                description: "Path and name of IV-Plan file to import."
+                icon: "media/icon_psp.png"
+                required: true
+
+  - import_cisplan_to_vault:
+        description: "Import CIS-Plan to kafka Vault. This will create a secret in Vault with the CIS-Plan content."
+        category: "Tasks"
+        icon: "media/icon_kafka.png"
+        parameters:
+            - vault_address:
+                description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+                icon: "media/icon_vault.png"
+                required: true
+            - vault_token:
+                    description: "Token for Vault access."
+                    icon: "media/icon_vault.png"
+                    required: true
+            - secret_name:
+                description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+                icon: "media/icon_kafka.png"
+                required: true
+            - filename:
+                description: "Path and name of IV-Plan file to import."
+                icon: "media/icon_kafka.png"
+                required: true
+
+  - configure_network:
+      description: "Configure network settings for Cisco CallManager, Cisco Meeting Server and UCC Priming & Staging Platform VM."
+      category: "Tasks"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - vault_address:
+            description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+            icon: "media/icon_vault.png"
+            required: true
+        - vault_token:
+            description: "Token for Vault access."
+            icon: "media/icon_vault.png"
+            required: true
+        - secret_name:
+            description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+            icon: "media/icon_kafka.png"
+            required: false
+
+  - start_post_config:
+      description: "Start post_config action to configure Cisco CallManager after deployment."
+      category: "Tasks"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - vault_address:
+            description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+            icon: "media/icon_vault.png"
+            required: true
+        - vault_token:
+            description: "Token for Vault access."
+            icon: "media/icon_vault.png"
+            required: true
+        - secret_name:
+            description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+            icon: "media/icon_kafka.png"
+            required: false
+
+  - configure_phonebook:
+      description: "Configure Cisco CallManager Phonebook on UCC Priming & Staging Platform virtual machine."
+      category: "Tasks"
+      icon: "media/icon_kafka.png"
+      parameters:
+        - vault_address:
+            description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+            icon: "media/icon_vault.png"
+            required: true
+        - vault_token:
+            description: "Token for Vault access."
+            icon: "media/icon_vault.png"
+            required: true
+        - secret_name:
+            description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+            icon: "media/icon_psp.png"
+            required: false
+
+  - sync_dnf_packages:
+        description: "Sync DNF packages from OS repository to tarball."
+        category: "Tasks"
+        icon: "media/icon_kafka.png"
+        parameters:
+          - vault_address:
+              description: "URL to the vault address for vault access, for example `http://localhost:8081`."
+              icon: "media/icon_vault.png"
+              required: true
+          - vault_token:
+              description: "Token for Vault access."
+              icon: "media/icon_vault.png"
+              required: true
+          - secret_name:
+              description: "Unique ID for Vault to identify Priming and Staging Platform secrets."
+              icon: "media/icon_kafka.png"
+              required: false
+          - packages:
+              description: "List of DNF packages to sync."
+              icon: "media/icon_kafka.png"
+              required: true
+          - export_folder:
+              description: "Folder where the DNF packages will be exported."
+              icon: "media/icon_kafka.png"
+              required: true
+
+# ---------------------------------------------------------------------------------------

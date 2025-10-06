@@ -1,0 +1,45 @@
+---
+
+#########################################################
+## Configuration                                       ##
+#########################################################
+
+# Create the pod for Kafka
+#- name: "Create pod {{ kafka_vars.container.pod }} for {{ kafka_vars.container.name }} container"
+#  when: kafka_vars.container.platform == "podman"
+#  community.podman.podman_pod:
+#    name: "{{ kafka_vars.container.pod }}"
+#    ports: "{{ kafka_vars.container.ports }}"
+#    state: present
+
+# Run the kafka container with the specified configuration
+#- name: "Run {{ kafka_vars.container.name }} container on {{ kafka_vars.container.platform }}"
+#  when: kafka_vars.container.platform == "podman"
+#  community.podman.podman_container:
+#    name: "{{ kafka_vars.container.name }}"
+#    image: "{{ kafka_vars.container.image }}"
+#    state: started
+#    pod: "{{ kafka_vars.container.pod }}"
+#    detach: true
+#    env:
+#      KAFKA_CFG_PROCESS_ROLES: "broker, controller"
+#      KAFKA_CFG_NODE_ID: 1
+#      KAFKA_CFG_CONTROLLER_QUOREM_VOTERS: "1@{{ ansible_default_ipv4.address }}:9093"
+#      KAFKA_CFG_LISTENERS: "PLAINTEXT://{{ ansible_default_ipv4.address }}:9093"
+#      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+#      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+#      KAFKA_CFG_CONTROLLER_LISTENERS: "PLAINTEXT://{{ ansible_default_ipv4.address }}:9093"
+
+# Generate a systemd unit file for the kafka pod to persist after reboots
+#- name: "Generate systemd unit file for {{ kafka_vars.container.pod }} pod"
+#  when: kafka_vars.container.platform == "podman"
+#  community.general.podman_generate_systemd:
+#    pod: "{{ kafka_vars.container.pod }}"
+#    state: present
+#    restart_policy: always
+#    user_unit: false
+#    files:
+#      - /etc/systemd/system/pod-{{ kafka_vars.container.pod }}.service
+#  notify:
+#    - Reload systemd
+#    - Enable and start podman pod
