@@ -1,0 +1,33 @@
+---
+- name: Make systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/update-clamav-db.service
+    content: |
+      [Unit]
+      Description=ClamAV database update
+      
+      [Service]
+      Type=oneshot
+      ExecStart=freshclam --quiet
+
+# systemd-analyze calendar "Mon 18:00"
+- name: Make systemd timer
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/update-clamav-db.timer
+    content: |
+      [Unit]
+      Description=Daily ClamAV database update
+
+      [Timer]
+      OnCalendar=*-*-* 6,18:00
+      RandomizedDelaySec=12h
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+
+- name: Start and enable update-clamav-db.service
+  ansible.builtin.systemd:
+    name: update-clamav-db.service
+    enabled: yes
+    state: started

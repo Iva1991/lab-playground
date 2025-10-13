@@ -60,6 +60,10 @@
 ## Run ClamAV Daemon                                   ##
 #########################################################
 
+- name: Start and enable update db service
+  ansible.builtin.include_tasks:
+    file: update_db.yml
+
 - name: Start and enable clamd@scan service
   ansible.builtin.include_tasks:
     file: run_service.yml
