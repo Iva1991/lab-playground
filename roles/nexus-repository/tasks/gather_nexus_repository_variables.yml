@@ -33,7 +33,8 @@
     # Set variable if not defined
     - name: "Register variable (nexus_repository_address)..."
       ansible.builtin.set_fact:
-        nexus_repository_address: ""
+      # nexus_repository_address: ""
+        nexus_repository_address: "http://192.168.76.131:8081"
       when: nexus_repository_address is not defined
       no_log: true
 
@@ -53,7 +54,7 @@
     # Set variable if not defined
     - name: "Register variable (nexus_repository_username)..."
       ansible.builtin.set_fact:
-        nexus_repository_username: ""
+        nexus_repository_username: "admin"
       when: nexus_repository_username is not defined
       no_log: true
 
@@ -73,7 +74,7 @@
     # Set variable if not defined
     - name: "Register variable (nexus_repository_password)..."
       ansible.builtin.set_fact:
-        nexus_repository_password: ""
+        nexus_repository_password: "76443bb4-029a-423a-be85-47db37c800a9"
       when: nexus_repository_password is not defined
       no_log: true
 

@@ -1,0 +1,35 @@
+---
+
+# Ansible playbook to import artifacts into Nexus Repository
+
+- name: Import artifacts from Nexus Repository example
+  hosts: localhost
+  vars:
+    vault_address: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR', default=Undefined) }}"
+    vault_token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN', default=Undefined) }}"
+    nexus_repository_folder : "/artifact-folder/"
+
+  roles:
+
+  tasks:
+    # Import repository
+    - name: Import artifacts from Nexus Repository
+      ansible.builtin.include_role:
+        name: nexus-repository
+      vars:
+        action : import_artifacts
+        nexus_repository_name : "files"
+        source_folder : "/tmp/files"
+        nexus_repository_folder : "/artifact-folder"
+        nexus_repository: 
+          address: "{{ vault_address }}"  # Get from Vault
+          username: "{{ vault_username }}" # Get from Vault
+          password: "{{ vault_token }}" # Get from Vault
+          secrets:
+            secret_name: "LABCS.development.local" # unique id to identify instance in Vault
+
+    - name: Show information message
+      debug:
+        msg:
+          - "Import completed to '{{ nexus_repository_folder }}' of '{{ nexus_repository.address }}'..."
+          - "Source folder: '{{ source_folder }}'"

@@ -19,6 +19,10 @@
     - nexus_repository_folder
     - source_folder
 
+- name: debug msg about nexus_repository_folder
+  ansible.builtin.debug:
+    msg: "Nexus Repository address: {{ nexus_repository_folder }}"
+
 # Test if repository name is valid.
 - name: Test if repository name is valid...
   ansible.builtin.uri:

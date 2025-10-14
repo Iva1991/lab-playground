@@ -1,13 +1,47 @@
 ---
 
-- name: install kafka
-  hosts: lab_core_services
-  become: yes
-  tasks:
+- name: Import artifacts from Nexus Repository example
+  hosts: 192.168.76.131
+  vars:
+    vault_address: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR', default=Undefined) }}"
+    vault_token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN', default=Undefined) }}"
 
-  # install Kafka
-  - name: install kafka
-    ansible.builtin.include_role:
-      name: kafka
-    vars:    
-      action: "install"
+  roles:
+
+  tasks:
+    # Import repository
+    - name: Import artifacts from Nexus Repository
+      ansible.builtin.include_role:
+        name: nexus-repository
+      vars:
+        action : import_artifacts
+        nexus_repository_name : "files"
+        nexus_repository_folder : ""
+        source_folder : "/tmp/files"
+        nexus_repository:
+        nexus_repository_address: "http://192.168.76.131:8081" # Get from Vault
+        nexus_repository_username: "admin" # Get from Vault
+        nexus_repository_password: 76443bb4-029a-423a-be85-47db37c800a9 # Get from Vault
+          # address: "{{ vault_address }}" # Get from Vault
+          # username: "{{ vault_username }}" # Get from Vault
+          # password: "{{ vault_token }}" # Get from Vault
+        secrets:
+          secret_name: "LABCS.development.local" # "192-168-29-90" # unique id to identify instance in Vault
+
+    - name: Show information message
+      debug:
+        msg:
+          - "Import completed to '{{ nexus_repository_folder }}' of '{{ nexus_repoository.address }}'..."
+          - "Source folder: '{{ source_folder }}'"
+
+#- name: install kafka
+#  hosts: lab_core_services
+#  become: yes
+#  tasks:
+#
+#  # install Kafka
+#  - name: install kafka
+#    ansible.builtin.include_role:
+#      name: kafka
+#    vars:    
+#      action: "install"

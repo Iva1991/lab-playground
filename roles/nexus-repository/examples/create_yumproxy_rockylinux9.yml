@@ -70,4 +70,3 @@
       ansible.builtin.debug:
         msg:
           - "Playbook completed..."
-          
