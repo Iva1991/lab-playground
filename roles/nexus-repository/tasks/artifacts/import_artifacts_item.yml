@@ -15,7 +15,8 @@
 # upload files to Nexus repository
 - name: "Import artifacts to Nexus repository ({{ nexus_repository_address }})..."
   ansible.builtin.uri:
-    url: "{{ nexus_repository_address }}/repository/{{ nexus_repository_name }}{{ nexus_repository_folder }}{{ item.path | regex_replace('^' + source_folder | regex_escape, '') | regex_replace(' ', '') | urlencode }}"
+#    url: "{{ nexus_repository_address }}/repository/{{ nexus_repository_name }}{{ nexus_repository_folder }}{{ item.path | regex_replace('^' + source_folder | regex_escape, '') | regex_replace(' ', '') | urlencode }}"
+    url: "{{ nexus_repository_address }}/repository/{{ nexus_repository_name }}{{ nexus_repository_folder }}{{ item.path | regex_replace('^' + source_folder | regex_escape, '') | urlencode }}"
     method: PUT
     user: "{{ nexus_repository_username }}"
     password: "{{ nexus_repository_password }}"

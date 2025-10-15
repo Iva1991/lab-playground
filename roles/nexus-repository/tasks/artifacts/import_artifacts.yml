@@ -53,8 +53,10 @@
     file_type: file
   register: source_files
 
+####### Place conversion code here if needed #######
+
 # Debug message
-- name: "Import artifacts - Information mesaage..."
+- name: "Import artifacts - Information message..."
   ansible.builtin.debug:
     msg: "Uploading {{ source_files.files | length }} file(s) to {{ nexus_repository_address }}..."
 

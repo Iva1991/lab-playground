@@ -1,0 +1,49 @@
+---
+
+#############################################################
+## Convert qcow2/qcow/img files to .tar.gz archives        ##
+#############################################################
+
+# Find files in source folder
+  - name: "Find files in source folder '{{ source_folder }}'..."
+    ansible.builtin.find:
+      paths: "{{ source_folder }}"
+      recurse: yes
+      file_type: file
+    register: source_files
+
+  # Filter
+  - name: Select disk image files
+    ansible.builtin.set_fact:
+      image_files: "{{ source_files.files | selectattr('path','regex','\\.((qcow2)|(qcow)|(img))$') | list }}"
+
+  # Create archive if missing
+  - name: Create .tar.gz archives
+    ansible.builtin.command: >
+      tar -czf "{{ item.path }}.tar.gz"
+      -C "{{ item.path | dirname }}"
+      "{{ item.path | basename }}"
+    args:
+      creates: "{{ item.path }}.tar.gz"
+    loop: "{{ image_files }}"
+    loop_control:
+      label: "{{ item.path | basename }}"
+
+  # Stat archives
+  - name: Stat created archives
+    ansible.builtin.stat:
+      path: "{{ item.path }}.tar.gz"
+    register: archive_stats
+    loop: "{{ image_files }}"
+    loop_control:
+      label: "{{ item.path | basename }}"
+
+  # Delete originals where archive exists
+  - name: Delete originals (archive present)
+    ansible.builtin.file:
+      path: "{{ item.item.path }}"
+      state: absent
+    when: item.stat.exists
+    loop: "{{ archive_stats.results }}"
+    loop_control:
+      label: "{{ item.item.path | basename }}"

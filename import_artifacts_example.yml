@@ -7,9 +7,15 @@
   vars:
     vault_address: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR', default=Undefined) }}"
     vault_token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN', default=Undefined) }}"
-    nexus_repository_folder : "/artifact-folder/"
+    source_folder : "/tmp/files"
 
   roles:
+
+  pre_tasks:
+    - name: Convert .qcow2/.qcow/.img files to .tar.gz archives
+      ansible.builtin.import_tasks:
+        file: /home/ansible/lab-playground/roles/nexus-repository/tasks/artifacts/convert_file.yml
+      when: source_folder is defined
 
   tasks:
     # Import repository

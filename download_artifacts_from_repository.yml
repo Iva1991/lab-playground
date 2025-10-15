@@ -1,0 +1,71 @@
+---
+# Download artifacts from repository example
+# This playbook will download files from the artifact repository to a folder.
+
+- name: Download artifacts from repository
+  hosts: localhost
+  vars:
+    vault_address: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR', default=Undefined) }}"
+    vault_token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN', default=Undefined) }}"
+    download_folder: "/tmp/blue_disk"
+
+  tasks:
+    # Information message
+    - name: Information message
+      ansible.builtin.debug:
+        msg:
+          - "#########################################################"
+          - "#########################################################"
+          - "Download artifacts from repository"
+          - "#########################################################"
+          - "#########################################################"
+
+    # Create folder
+    - name: Create folder for downloaded artifacts...
+      ansible.builtin.file:
+        path: "{{ download_folder }}"
+        state: directory
+    
+    # Download folder
+    - name: Download artifacts from repository...
+      ansible.builtin.include_role:
+        name: nexus-repository
+      vars:
+        action: "export_artifacts"
+        nexus_repository_name       : "files"
+        nexus_repository_folder     : "/artifact-folder"
+        destination_folder          : "{{ download_folder }}"        
+        nexus_repository:
+          address: "{{ vault_address }}"  # Get from Vault
+          username: "{{ vault_username }}" # Get from Vault
+          password: "{{ vault_token }}" # Get from Vault
+          secrets:
+            secret_name: "LABCS.development.local" # unique id to identify instance in Vault
+  
+    # Upload completed
+    - name: Show information message
+      ansible.builtin.debug:
+        msg:
+          - "Download completed..."
+    
+  post_tasks:
+    - name: Find candidate .tar.gz files
+      ansible.builtin.find:
+        paths: "{{ download_folder }}"
+        patterns: "*.tar.gz"
+        recurse: yes
+      register: found_archives
+
+    - name: Filter archives whose basename ends with qcow/qcow2/img before .tar.gz
+      ansible.builtin.set_fact:
+        image_archives: "{{ found_archives.files | selectattr('path','regex','\\.((qcow2)|(qcow)|(img))\\.tar\\.gz$') | list }}"
+
+    - name: Extract image archives
+      ansible.builtin.unarchive:
+        src: "{{ item.path }}"
+        dest: "{{ item.path | dirname }}"
+      #  remote_src: yes
+      loop: "{{ image_archives }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+          
