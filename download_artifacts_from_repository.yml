@@ -48,24 +48,22 @@
         msg:
           - "Download completed..."
     
-  post_tasks:
-    - name: Find candidate .tar.gz files
-      ansible.builtin.find:
-        paths: "{{ download_folder }}"
-        patterns: "*.tar.gz"
-        recurse: yes
-      register: found_archives
+  #post_tasks:
+  #  - name: Find candidate .tar.gz files
+  #    ansible.builtin.find:
+  #      paths: "{{ download_folder }}"
+  #      patterns: "*.tar.gz"
+  #      recurse: yes
+  #    register: found_archives
 
-    - name: Filter archives whose basename ends with qcow/qcow2/img before .tar.gz
-      ansible.builtin.set_fact:
-        image_archives: "{{ found_archives.files | selectattr('path','regex','\\.((qcow2)|(qcow)|(img))\\.tar\\.gz$') | list }}"
+  #  - name: Filter archives whose basename ends with qcow/qcow2/img before .tar.gz
+  #    ansible.builtin.set_fact:
+  #      image_archives: "{{ found_archives.files | selectattr('path','regex','\\.((qcow2)|(qcow)|(img))\\.tar\\.gz$') | list }}"
 
-    - name: Extract image archives
-      ansible.builtin.unarchive:
-        src: "{{ item.path }}"
-        dest: "{{ item.path | dirname }}"
-      #  remote_src: yes
-      loop: "{{ image_archives }}"
-      loop_control:
-        label: "{{ item.path | basename }}"
+  #  - name: Extract image archives
+  #    ansible.builtin.command:
+  #      cmd: "tar -xzf {{ item.path }}.tar.gz | head"
+  #    loop: "{{ image_archives }}"
+  #    loop_control:
+  #      label: "{{ item.path | basename }}"
           
