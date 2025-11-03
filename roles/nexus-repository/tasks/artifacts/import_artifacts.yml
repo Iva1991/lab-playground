@@ -26,7 +26,8 @@
 # Test if repository name is valid.
 - name: Test if repository name is valid...
   ansible.builtin.uri:
-    url: "{{ nexus_repository_address }}/service/rest/v1/repositories/{{ nexus_repository_name }}"
+    # url: "{{ nexus_repository_address }}/service/rest/v1/repositories/{{ nexus_repository_name }}"
+    url: "{{ nexus_repository_address }}/service/rest/v1/components?repository={{ nexus_repository_name }}"
     method: GET
     user: "{{ nexus_repository_username }}"
     password: "{{ nexus_repository_password }}"

@@ -8,6 +8,7 @@
     vault_address: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR', default=Undefined) }}"
     vault_token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN', default=Undefined) }}"
     source_folder : "/tmp/files"
+    nexus_repository_folder : "/artifact-folder"
 
   roles:
 
