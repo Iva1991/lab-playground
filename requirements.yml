@@ -32,4 +32,8 @@ roles:
     version: main
     scm: git
 
+  - name: clam-av
+    src: https://github.com/Iva1991/clam-av.git
+    version: master
+    scm: git
   
