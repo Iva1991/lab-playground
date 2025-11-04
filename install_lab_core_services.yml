@@ -99,6 +99,20 @@
       ansible.builtin.debug:
         msg:
           - "#########################################################"
+          - "Install clam-av virusscanner"
+          - "#########################################################"
+
+    # Install Clam-av virus scanner
+    - name: Install Clam-av virus scanner...
+      ansible.builtin.include_role:
+        name: clam-av
+      vars:
+        action: "install"
+
+    - name: Information message
+      ansible.builtin.debug:
+        msg:
+          - "#########################################################"
           - "Install Hashicorp Vault secrets management"
           - "#########################################################"
 
