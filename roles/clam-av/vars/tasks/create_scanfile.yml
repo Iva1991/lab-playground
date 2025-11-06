@@ -1,0 +1,46 @@
+---
+
+# Create a script file
+- name: Create the clamdscan-root script file
+  ansible.builtin.file:
+    path: /usr/local/bin/clamdscan-root
+    state: touch
+    owner: ansible
+    group: ansible
+    mode: 0744
+
+# Write contents to script file
+- name: Write contents to script file
+  ansible.builtin.copy:
+    dest: /usr/local/bin/clamdscan-root
+    content: |
+      #!/usr/bin/env bash
+      # clamdscan-root — safe system scan that prunes noisy and pseudo-filesystems
+      set -euo pipefail
+ 
+      # Add or remove -path rules to match your environment and clamd.conf ExcludePath lines.
+      sudo find / \
+      -path /proc -prune -o \
+      -path /sys -prune -o \
+      -path /dev -prune -o \
+      -path /run -prune -o \
+      -path /var/run -prune -o \
+      -path /var/lib/docker -prune -o \
+      -path /var/lib/containers -prune -o \
+      -path /home/podman/.local/share/containers -prune -o \
+      -path /snap -prune -o \
+      -path /mnt -prune -o \
+      -type f -print0 \
+      | sudo xargs -0 -n 1000 clamdscan --fdpass --config-file=/etc/clamd.d/clamd.conf
+
+# Confirm the script file was created
+- name: Confirm the clamdscan-root script file was created
+  ansible.builtin.stat:
+    path: /usr/local/bin/clamdscan-root
+  register: scanfile_stat
+
+# Display the result
+- name: Display the result of the clamdscan-root script file creation
+  ansible.builtin.debug:
+    msg: "The clamdscan-root script file was created successfully with the following details: {{ scanfile_stat.stat }}"
+  when: scanfile_stat.stat.exists

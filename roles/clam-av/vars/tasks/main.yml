@@ -1,0 +1,67 @@
+---
+
+#########################################################
+## Main module for RedHat ClamAV Ansible role         ##
+#########################################################
+
+# Show message
+- name: Show action message
+  ansible.builtin.debug:
+    msg: "Starting role {{ role_name }}... action: {{ action }}."
+
+# If action variable is not defined, gather status of the service and set action variable  
+- name: Gather action variable status...
+  ansible.builtin.include_tasks: set_action.yml
+  when: action is not defined
+
+# Assert that action is in actions
+- name: "Verify valid action ({{ action }})..."
+  ansible.builtin.assert:
+    that:
+      - action in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
+    fail_msg: "The action '{{ action }}' is not in the list of valid actions..."
+    quiet: true
+
+# Merge role defaults with clamav, include nested variables
+# Nested merge does not work well, so use workaround to combine variables
+- name: Gather defaults (clamav)...
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/main.yml"
+    name: clamav_defaults
+
+# Merge role defaults, include nested variables
+- name: Merge role defaults with collected variables...
+  ansible.builtin.set_fact:
+    clamav_vars: "{{ clamav_defaults.clamav | combine(clamav | default({}), recursive=true) }}"
+
+# TODO: Send message to Kafka bus
+- name: Publish message to Kafka bus...
+  ansible.builtin.debug:
+    msg: "TODO: Publish message to Kafka bus..."
+  when: kafka_bootstrap_servers is defined 
+
+# -------------------------------------------------------
+- name: Start install action...
+  ansible.builtin.include_tasks: install.yml
+  when: action == "install"
+
+- name: Start uninstall action...
+  ansible.builtin.include_tasks: uninstall.yml
+  when: action == "uninstall"
+
+- name: Start configure action...
+  ansible.builtin.include_tasks: configure.yml
+  when: action == "configure"
+
+- name: Start update action...
+  ansible.builtin.include_tasks: update.yml
+  when: action == "update"
+
+- name: Start start action...
+  ansible.builtin.include_tasks: start.yml
+  when: action == "start"
+
+- name: Start stop action...
+  ansible.builtin.include_tasks: stop.yml
+  when: action == "stop"
+# -------------------------------------------------------

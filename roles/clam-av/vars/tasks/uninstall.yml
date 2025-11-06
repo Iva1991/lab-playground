@@ -1,0 +1,53 @@
+---
+
+##############################
+## Uninstall                ##
+##############################
+
+# Gather package facts
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+# Remove clamav/clamd packages if these are present
+- name: Remove clamav packages if present
+  ansible.builtin.dnf:
+    name:
+      - clamav
+      - clamav-lib
+      - clamav-update
+      - clamav-filesystem
+      - clamav-freshclam
+      - clambc
+      - clamconf
+      - clamdscan
+      - clamdtop
+      - clamonacc
+      - clamscan
+      - clamsubmit
+    state: absent
+
+# Remove clamav/clamd configuration files
+- name: Remove clamav configuration files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/clamav
+    - /etc/clamd
+    - /etc/clamd.d
+    - /etc/clamd.d/scan.conf
+    - /etc/freshclam.conf
+
+# Remove leftover - name: Remove leftover ClamAV binaries
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/bin/clambc
+    - /usr/bin/clamconf
+    - /usr/bin/clamdscan
+    - /usr/bin/clamdtop
+    - /usr/bin/clamonacc
+    - /usr/bin/clamscan
+    - /usr/bin/clamsubmit

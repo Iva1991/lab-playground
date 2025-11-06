@@ -4,7 +4,7 @@
 # - podman, cockpit, hashicorp vault, nexus repository
 
 - name: Install Lab Playground server prerequisites
-  hosts: localhost
+  hosts: 192.168.76.130
   become: true
 
   tasks:
@@ -34,7 +34,7 @@
 
 
 - name: Install Lab Playground server
-  hosts: lab_core_services
+  hosts: 192.168.76.130
   become: true
   vars:
     # if uninstall is true, roles will be uninstalled first before installation.

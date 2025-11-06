@@ -109,11 +109,3 @@
     name: clamd.service
     enabled: yes
     state: started
-
-# Create cron job to reload clamd.service 30 seconds after reboot
-- name: Create cron job to reload clamd.service 30 seconds after reboot
-  ansible.builtin.cron:
-    name: "Reload clamd.service after reboot"
-    special_time: reboot
-    job: "sleep 10 && systemctl reload clamd.service"
-    user: root

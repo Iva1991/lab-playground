@@ -1,0 +1,13 @@
+##############################
+## Update                   ##
+##############################
+
+- name: Upgrade clamav package to the latest version...
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  loop: 
+    - clamav
+    - clamd
+    - clamav-lib
+    - clamav-update

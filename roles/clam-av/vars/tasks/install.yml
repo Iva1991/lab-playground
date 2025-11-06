@@ -1,0 +1,73 @@
+---
+
+#########################################################
+## Gather package information                          ##
+#########################################################
+
+# Gather information about the already installed packages
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+#########################################################
+## Check if epel-release package has been installed    ##
+#########################################################
+
+# Install epel-release if not installed
+- name: Install epel-release if not installed
+  ansible.builtin.dnf:
+    name: epel-release
+    state: present
+  become: yes
+  when: "'epel-release' not in ansible_facts.packages"
+
+#########################################################
+## Install clamav packages                             ##
+#########################################################
+
+# Install clamav packages
+- name: Install clamav packages
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - vim
+      - clamav
+      - clamav-server
+      - clamav-server-systemd
+      - clamd
+      - clamav-lib
+      - clamav-update
+    state: present
+
+# Check if clamav is installed and do a version check
+- name: Verify if clamav is installed and check the version
+  ansible.builtin.command: clamscan --version
+
+#########################################################
+## Update the clamav virus database                    ##
+#########################################################
+
+# Update the clamav virus database
+- name: Update clamav virus database
+  become: true
+  ansible.builtin.command: freshclam
+
+# Verify the clamav virus database update
+- name: Verify the clamav virus database update
+  ansible.builtin.command: freshclam --show-progress
+
+#########################################################
+## Run ClamAV Daemon                                   ##
+#########################################################
+
+- name: Start and enable clamd@scan service
+  ansible.builtin.include_tasks:
+    file: run_service.yml
+
+#########################################################
+## Create an clamdscan-root executable to scan system  ##
+#########################################################
+
+- name: Create clamdscan-root script
+  ansible.builtin.include_tasks:
+    file: create_scanfile.yml
