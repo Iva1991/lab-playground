@@ -30,5 +30,11 @@
 # Set action to install if ClamAV is not installed
 - name: Set action to install if ClamAV is not installed
   ansible.builtin.set_fact:
-    action: "install"
+    action_type: "install"
   when: "'clamav' not in ansible_facts.packages"
+
+# Set action to uninstall if ClamAV is installed
+- name: Set action to uninstall if ClamAV is installed
+  ansible.builtin.set_fact:
+    action: "uninstall"
+  when: "'clamav' in ansible_facts.packages"

@@ -5,12 +5,7 @@ actions:
             - uninstall:
                 description: "Uninstall existing clamav before installation."
                 required: false
-            - clamav_branding_logo:
-                description: "URL/path to the logo for clamav branding."
-                required: false
-            - clamav_branding_banner:
-                description: "URL/path to the banner for clamav branding."
-                required: false
+
     - uninstall:
         description: "Uninstall clamav and remove its configuration folder."
         parameters:
@@ -20,13 +15,6 @@ actions:
 
     - configure:
         description: "Reconfigure clamav settings."
-        parameters:
-            - clamav_branding_logo:
-                description: "URL/path to the logo for clamav branding."
-                required: false
-            - clamav_branding_banner:
-                description: "URL/path to the banner for clamav branding."
-                required: false
 
     - start:
         description: "Start the clamav service."

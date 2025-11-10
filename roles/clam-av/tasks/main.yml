@@ -43,7 +43,7 @@
 # -------------------------------------------------------
 - name: Start install action...
   ansible.builtin.include_tasks: install.yml
-  when: action == "install"
+  when: action_type == "install"
 
 - name: Start uninstall action...
   ansible.builtin.include_tasks: uninstall.yml

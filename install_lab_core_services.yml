@@ -107,7 +107,7 @@
       ansible.builtin.include_role:
         name: clam-av
       vars:
-        action: "install"
+        action_type: "install"
 
     - name: Information message
       ansible.builtin.debug:
