@@ -21,12 +21,6 @@
   failed_when: false
   ignore_errors: true
 
-# Set action variable when service is not running
-- name: Set action to start if ClamAV service is not running
-  ansible.builtin.set_fact:
-    action: "start"
-  when: clamav_service_status.status != 'running'
-
 # Set action to install if ClamAV is not installed
 - name: Set action to install if ClamAV is not installed
   ansible.builtin.set_fact:
@@ -36,5 +30,5 @@
 # Set action to uninstall if ClamAV is installed
 - name: Set action to uninstall if ClamAV is installed
   ansible.builtin.set_fact:
-    action: "uninstall"
+    action_type: "uninstall"
   when: "'clamav' in ansible_facts.packages"
