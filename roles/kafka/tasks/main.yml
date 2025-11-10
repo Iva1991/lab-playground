@@ -7,7 +7,7 @@
 # Show message
 - name: Show action message
   ansible.builtin.debug:
-    msg: "Starting role {{ role_name }}... action: {{ action }}."
+    msg: "Starting role {{ role_name }}... action: {{ action_type }}."
 
 # If action variable is not defined, gather status of the service and set action variable
 - name: Gather action variable status...
@@ -15,16 +15,16 @@
   when: action is not defined
 
 # Assert that action is in actions
-- name: "Verify valid action ({{ action }})..."
+- name: "Verify valid action ({{ action_type }})..."
   ansible.builtin.assert:
     that:
-      - action in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
-    fail_msg: "The action '{{ action }}' is not in the list of valid actions..."
+      - action_type in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
+    fail_msg: "The action '{{ action_type }}' is not in the list of valid actions..."
     quiet: true
 
 # Merge role defaults with vault, include nested variables
 # Nested merge does not work well, so use workaround to combine variables
-- name: Gather defaults (nexus_repository)...
+- name: Gather defaults (kafka)...
   ansible.builtin.include_vars:
     file: "{{ role_path }}/defaults/main.yml"
     name: kafka_defaults
@@ -44,4 +44,4 @@
   # install, uninstall, configure, update, setup
 - name: Start install action...
   ansible.builtin.include_tasks: install.yml
-  when: action == "install"
+  when: action_type == "install"

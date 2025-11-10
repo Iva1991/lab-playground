@@ -1,12 +1,12 @@
 ---
-- name: install ClamAV
+- name: Kafka
   hosts: lab_core_services
   become: yes
   tasks:
 
     # install 
-    - name: install ClamAV
+    - name: install kafka
       ansible.builtin.include_role:
-        name: clam-av
-      vars:    
+        name: kafka
+      vars:
         action_type: "install"

@@ -1,0 +1,19 @@
+---
+
+#########################################################
+## Set action                                          ##
+#########################################################
+# If action variable is not defined, gather status of the service
+# If service not installed, set action to install.
+# If the service is not started, set action to start.
+
+# Gather installed packages
+- name: Gather installed packages using package_facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+# Set action to install if ClamAV is not installed
+- name: Set action to install if ClamAV is not installed
+  ansible.builtin.set_fact:
+    action_type: "install"
+  when: "'kafka' not in ansible_facts.packages"
