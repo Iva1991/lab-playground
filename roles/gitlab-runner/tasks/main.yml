@@ -1,0 +1,47 @@
+---
+
+############################################################
+## Main module for  Kafka Ansible role                    ##
+############################################################
+
+# Show message
+- name: Show action message
+  ansible.builtin.debug:
+    msg: "Starting role {{ role_name }}... action: {{ action_type }}."
+
+# If action variable is not defined, gather status of the service and set action variable
+- name: Gather action variable status...
+  ansible.builtin.include_tasks: set_action.yml
+  when: action is not defined
+
+# Assert that action is in actions
+- name: "Verify valid action ({{ action_type }})..."
+  ansible.builtin.assert:
+    that:
+      - action_type in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
+    fail_msg: "The action '{{ action_type }}' is not in the list of valid actions..."
+    quiet: true
+
+# Merge role defaults with vault, include nested variables
+# Nested merge does not work well, so use workaround to combine variables
+- name: Gather defaults (gitlab-runner)...
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/main.yml"
+    name: gitlab_runner_defaults
+
+# Merge role defaults, include nested variables
+- name: Merge role defaults with collected variables...
+  ansible.builtin.set_fact:
+    gitlab_runner_vars: "{{ gitlab_runner_defaults.gitlab_runner | combine( gitlab_runner | default({}), recursive=true ) }}"
+
+# TODO: Send message to Kafka bus
+- name: Publish message to Kafka bus...
+  ansible.builtin.debug:
+    msg: "TODO: Publish message to Kafka bus..."
+  when: kafka_bootstrap_servers is defined
+
+# -------------------------------------------------------
+  # install, uninstall, configure, update, setup
+- name: Start install action...
+  ansible.builtin.include_tasks: install.yml
+  when: action_type == "install"

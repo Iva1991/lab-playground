@@ -1,7 +1,7 @@
 ---
 
 #########################################################
-## Kafka role defaults                          ##
+## Kafka role defaults                                 ##
 #########################################################
 
 # default role variables for the kafka role

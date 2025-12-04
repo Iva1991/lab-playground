@@ -1,0 +1,94 @@
+---
+
+#########################################################
+## Gather package information                          ##
+#########################################################
+
+# Gather information about the already installed packages
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+#########################################################
+## Check if epel-release package has been installed    ##
+#########################################################
+
+# install epel-release if not installed
+- name: Install epel-release if not installed
+  ansible.builtin.dnf:
+    name: epel-release
+    state: present
+  become: yes
+  when: "'epel-release' not in ansible_facts.packages"
+
+#########################################################
+## Install gitlab-runner packages                      ##
+#########################################################
+
+# Install gitlab-runner packages
+- name: Install gitlab-runner packages
+  ansible.builtin.dnf:
+    name:
+      - gitlab-runner
+      - podman-plugins
+    state: present
+
+# change the subuids and subgids for gitlab-runner
+- name: Change the subuids and subgids for gitlab-runner
+  ansible.builtin.command: >
+    usermod --add-subuids 100000-165535 --add-subgids 100000-165535 gitlab-runner
+  become: true
+
+# Export the XDG_RUNTIME_DIR variable for gitlab-runner
+- name: Export the XDG_RUNTIME_DIR variable for gitlab-runner
+  ansible.builtin.command: >
+    export XDG_RUNTIME_DIR="/run/user/$UID
+  become_user: gitlab-runner
+
+# Enable and start the podman socket
+- name: Enable and start the podman socket
+  ansible.builtin.systemd:
+    name: podman.socket
+    enabled: yes
+    state: started
+  become_user: gitlab-runner
+
+# Enable linger for gitlab-runner
+- name: Enable linger for gitlab-runner
+  ansible.builtin.command: >
+    loginctl enable-linger gitlab-runner
+  become: true
+
+# Verify if the gitlab-runner with a certain name is already registered
+- name: Check if runner is already registered
+  ansible.builtin.command: gitlab-runner list
+  register: runner_list
+  changed_when: false
+  failed_when: false
+
+# Register gitlab-runner executor as "docker"
+- name: Register gitlab-runner executor as "docker"
+  ansible.builtin.command: >
+    gitlab-runner install --executor "docker"
+    --non-interactive
+    --url "{{ gitlab_runner_url }}"
+    --token "{{ gitlab_runner_registration_token }}" 
+    --tls-ca-file "{{ gitlab_runner_tls_ca_file }}"
+    --name "{{ runner_name }}"
+    --docker_image "{{ docker_image }}"
+    --docker_pull_policy "{{ docker_pull_policy | default('never') }}"
+    --docker-host "{{ docker_host | default('unix:///var/run/podman/podman.sock') }}"
+  become: true
+  when: runner_list.stdout is not search(" {{ runner_name }}")
+
+# Get registred token from GitLab
+- name: Get registered runner token from GitLab
+  ansible.builtin.uri:
+    url: "{{ gitlab_api_url }}/runners?perpage=100"
+  register: get_registered_token
+  changed_when: false
+
+
+
+
+

@@ -1,0 +1,30 @@
+---
+
+#########################################################
+## Gitlab Runner defaults                              ##
+#########################################################
+
+# Default role variables for the gitlab-runner role
+gitlab-runner:
+
+  # address is the URL to connect to the gitlab-runner server.
+  address: ""
+  # username is the username to connect to the gitlab-runner server.
+  username: ""
+  # password is the password to connect to the gitlab-runner server.
+  password: ""
+  # token is the token used to authenticate to the gitlab-runner server.
+  token: ""
+
+  # packages is a list of additional packages to install.
+  packages: [ "epel-release" ]
+
+  # gitlab_api_url: "https://gitlab.your-domain.com/api/v4"
+
+  # metadata contains information about the role:
+  metadata:
+    name: "gitlab-runner"
+    description: "Ansible role for Gitlab Runner."
+    version: "x.x.x"
+    maintainer: ""
+    maintainer_email: ""

@@ -1,0 +1,15 @@
+---
+
+actions:
+# -------------------------------------------------------
+  # Deployment
+  - install:
+      description: "Installation and configuration of gitlab-runner."
+      category: "Deployment"
+      parameters:
+        - gitlab-runner:
+            description: "Variables for gitlab-runner role."
+            required: false
+        - secret_name:
+            description: "Unique ID for Vault to identify gitlab-runner secrets."
+            required: false
